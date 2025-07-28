@@ -292,15 +292,21 @@
             authDomain: "chat-d647c.firebaseapp.com",
             databaseURL: "https://chat-d647c-default-rtdb.firebaseio.com",
             projectId: "chat-d647c",
-            storageBucket: "chat-d647c.firebasestorage.app",
+            storageBucket: "chat-d647c.appspot.com",
             messagingSenderId: "123456789",
             appId: "1:123456789:web:7248a0983dcf0d45a87418",
             measurementId: "G-5RFLRYTLCN"
         };
 
-        firebase.initializeApp(firebaseConfig);
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const auth = firebase.auth();
         const database = firebase.database();
+
+        // Enable persistence
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
         let currentUser = null;
         let currentModel = 'orin4o';
@@ -342,25 +348,39 @@
 
         // Load user data
         async function loadUserData() {
-            const userRef = database.ref(`users/${currentUser.uid}`);
-            const snapshot = await userRef.once('value');
-            const userData = snapshot.val() || {};
-            
-            dailyUsage = userData.dailyUsage || 0;
-            isPlus = userData.isPlus || false;
-            knowledgeBase = userData.knowledgeBase || {};
-            
-            updateUsageDisplay();
-            updateModelAccess();
-            
-            // Reset daily usage if it's a new day
-            const today = new Date().toDateString();
-            if (userData.lastUsageDate !== today) {
-                dailyUsage = 0;
-                userRef.update({
-                    dailyUsage: 0,
-                    lastUsageDate: today
-                });
+            try {
+                const userRef = database.ref(`users/${currentUser.uid}`);
+                const snapshot = await userRef.once('value');
+                const userData = snapshot.val() || {};
+                
+                dailyUsage = userData.dailyUsage || 0;
+                isPlus = userData.isPlus || false;
+                knowledgeBase = userData.knowledgeBase || {};
+                
+                updateUsageDisplay();
+                updateModelAccess();
+                
+                // Reset daily usage if it's a new day
+                const today = new Date().toDateString();
+                if (userData.lastUsageDate !== today) {
+                    dailyUsage = 0;
+                    await userRef.update({
+                        dailyUsage: 0,
+                        lastUsageDate: today
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Add loading states
+        function setButtonLoading(button, loading) {
+            if (loading) {
+                button.disabled = true;
+                button.innerHTML = '<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>';
+            } else {
+                button.disabled = false;
             }
         }
 
@@ -409,18 +429,7 @@
         // Email/Password Authentication
         emailForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            try {
-                await auth.signInWithEmailAndPassword(email, password);
-            } catch (error) {
-                showError(error.code);
-            }
-        });
-
-        document.getElementById('signupBtn').addEventListener('click', async () => {
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
             if (!email || !password) {
@@ -428,20 +437,98 @@
                 return;
             }
 
+            const loginBtn = document.getElementById('loginBtn');
+            setButtonLoading(loginBtn, true);
+
             try {
-                await auth.createUserWithEmailAndPassword(email, password);
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                console.log('Login successful:', userCredential.user);
             } catch (error) {
+                console.error('Login error:', error);
                 showError(error.code);
+            } finally {
+                loginBtn.innerHTML = 'Login';
+                setButtonLoading(loginBtn, false);
+            }
+        });
+
+        document.getElementById('signupBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                showError('Please fill in all fields.');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters long.');
+                return;
+            }
+
+            const signupBtn = document.getElementById('signupBtn');
+            setButtonLoading(signupBtn, true);
+
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                console.log('Signup successful:', userCredential.user);
+                
+                // Initialize user data
+                await database.ref(`users/${userCredential.user.uid}`).set({
+                    email: email,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP,
+                    dailyUsage: 0,
+                    isPlus: false,
+                    lastUsageDate: new Date().toDateString()
+                });
+            } catch (error) {
+                console.error('Signup error:', error);
+                showError(error.code);
+            } finally {
+                signupBtn.innerHTML = 'Sign Up';
+                setButtonLoading(signupBtn, false);
             }
         });
 
         // Google Authentication
         googleLogin.addEventListener('click', async () => {
+            const originalText = googleLogin.innerHTML;
+            setButtonLoading(googleLogin, true);
+            
             const provider = new firebase.auth.GoogleAuthProvider();
+            provider.addScope('email');
+            provider.addScope('profile');
+            
             try {
-                await auth.signInWithPopup(provider);
+                const result = await auth.signInWithPopup(provider);
+                console.log('Google login successful:', result.user);
+                
+                // Initialize user data if new user
+                const userRef = database.ref(`users/${result.user.uid}`);
+                const snapshot = await userRef.once('value');
+                
+                if (!snapshot.exists()) {
+                    await userRef.set({
+                        email: result.user.email,
+                        displayName: result.user.displayName,
+                        photoURL: result.user.photoURL,
+                        createdAt: firebase.database.ServerValue.TIMESTAMP,
+                        dailyUsage: 0,
+                        isPlus: false,
+                        lastUsageDate: new Date().toDateString()
+                    });
+                }
             } catch (error) {
-                showError(error.message);
+                console.error('Google login error:', error);
+                if (error.code === 'auth/popup-closed-by-user') {
+                    showError('Login cancelled. Please try again.');
+                } else {
+                    showError(error.message);
+                }
+            } finally {
+                googleLogin.innerHTML = originalText;
+                setButtonLoading(googleLogin, false);
             }
         });
 
@@ -511,4 +598,5 @@
         // Format message with code blocks and sources
         function formatMessage(content) {
             // Handle code blocks
-            content = content.replace(/<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'966536bf631a40b1',t:'MTc1MzcxNDQ4OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+            content = content.replace(/
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'966540703026ff71',t:'MTc1MzcxNDg4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
