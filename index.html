@@ -907,16 +907,15 @@
     <div class="gcse-search"></div>
 
     <script>
-        // Initialize Firebase
+        // Initialize Firebase with updated configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyAl8eI-_8Ew9va0KPV8p4D2hc9WUTGiwuI",
-            authDomain: "chat-d647c.firebaseapp.com",
-            databaseURL: "https://chat-d647c-default-rtdb.firebaseio.com",
-            projectId: "chat-d647c",
-            storageBucket: "chat-d647c.firebasestorage.app",
-            messagingSenderId: ".",
-            appId: "1:.:web:7248a0983dcf0d45a87418",
-            measurementId: "G-5RFLRYTLCN"
+            apiKey: "AIzaSyCrthf6y3GXRWSYn1Luz-V1CjueCWAf5WA",
+            authDomain: "orinai-c2d36.firebaseapp.com",
+            databaseURL: "https://orinai-c2d36-default-rtdb.firebaseio.com",
+            projectId: "orinai-c2d36",
+            storageBucket: "orinai-c2d36.firebasestorage.app",
+            messagingSenderId: "526208511899",
+            appId: "1:526208511899:web:6ba8f4a929c6ca279ffb3e"
         };
         
         firebase.initializeApp(firebaseConfig);
@@ -968,7 +967,7 @@
         
         // Load AI responses from Firebase
         function loadAIResponses() {
-            const responsesRef = database.ref('ai_responses');
+            const responsesRef = database.ref('global_knowledge/ai_responses');
             responsesRef.once('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -982,7 +981,7 @@
         
         // Load restricted commands from Firebase
         function loadRestrictedCommands() {
-            const commandsRef = database.ref('restricted_commands');
+            const commandsRef = database.ref('global_knowledge/restricted_commands');
             commandsRef.once('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -995,8 +994,10 @@
         }
         
         // Load training data from Firebase
-        function loadTrainingData() {
-            const trainingRef = database.ref('training_data');
+        function loadTrainingData(userId) {
+            if (!userId) return;
+            
+            const trainingRef = database.ref(`users/${userId}/training_data`);
             trainingRef.once('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -1004,7 +1005,7 @@
                 } else {
                     // Initialize with empty training data
                     trainingData = {};
-                    database.ref('training_data').set(trainingData);
+                    database.ref(`users/${userId}/training_data`).set(trainingData);
                 }
             });
         }
@@ -1028,7 +1029,7 @@
             };
             
             // Save to Firebase
-            const responsesRef = database.ref('ai_responses');
+            const responsesRef = database.ref('global_knowledge/ai_responses');
             responsesRef.set(defaultResponses);
             
             // Set local variable
@@ -1044,7 +1045,7 @@
             };
             
             // Save to Firebase
-            const commandsRef = database.ref('restricted_commands');
+            const commandsRef = database.ref('global_knowledge/restricted_commands');
             commandsRef.set(defaultCommands);
             
             // Set local variable
@@ -1053,24 +1054,22 @@
         
         // Save query to training data
         function saveQueryToTraining(query, response, model) {
-            if (!query || !response) return;
+            if (!query || !response || !currentUser) return;
             
             const queryId = Date.now().toString();
-            const trainingRef = database.ref('training_data/' + queryId);
+            const trainingRef = database.ref(`users/${currentUser.uid}/training_data/${queryId}`);
             
             trainingRef.set({
                 query: query,
                 response: response,
                 model: model,
-                timestamp: firebase.database.ServerValue.TIMESTAMP,
-                userId: currentUser ? currentUser.uid : 'anonymous'
+                timestamp: firebase.database.ServerValue.TIMESTAMP
             });
         }
         
         // Load initial data
         loadAIResponses();
         loadRestrictedCommands();
-        loadTrainingData();
         
         // Toggle between login and signup forms
         switchToSignup.addEventListener('click', () => {
@@ -1191,9 +1190,14 @@
             userRef.set({
                 email: user.email,
                 createdAt: firebase.database.ServerValue.TIMESTAMP,
-                isPlusUser: false,
-                lastResetTime: firebase.database.ServerValue.TIMESTAMP,
-                messageCount: 0
+                usage: {
+                    lastResetTime: firebase.database.ServerValue.TIMESTAMP,
+                    messageCount: 0
+                },
+                plus_plan: {
+                    isPlusUser: false,
+                    expiryDate: null
+                }
             });
         }
         
@@ -1212,6 +1216,9 @@
                 
                 // Load user data
                 loadUserData(user.uid);
+                
+                // Load training data
+                loadTrainingData(user.uid);
                 
                 // Load chat history
                 loadChatList(user.uid);
@@ -1239,22 +1246,37 @@
                 const userData = snapshot.val();
                 
                 if (userData) {
-                    isPlusUser = userData.isPlusUser || false;
+                    // Check if plus_plan exists
+                    if (userData.plus_plan) {
+                        isPlusUser = userData.plus_plan.isPlusUser || false;
+                    } else {
+                        isPlusUser = false;
+                    }
                     
-                    // Check if we need to reset the message count
-                    const lastResetTime = userData.lastResetTime || Date.now();
-                    const currentTime = Date.now();
-                    const twelveHoursInMs = 12 * 60 * 60 * 1000;
-                    
-                    if (currentTime - lastResetTime >= twelveHoursInMs) {
-                        // Reset message count
-                        userRef.update({
+                    // Check if usage exists
+                    if (userData.usage) {
+                        // Check if we need to reset the message count
+                        const lastResetTime = userData.usage.lastResetTime || Date.now();
+                        const currentTime = Date.now();
+                        const twelveHoursInMs = 12 * 60 * 60 * 1000;
+                        
+                        if (currentTime - lastResetTime >= twelveHoursInMs) {
+                            // Reset message count
+                            userRef.child('usage').update({
+                                messageCount: 0,
+                                lastResetTime: firebase.database.ServerValue.TIMESTAMP
+                            });
+                            messageCount = 0;
+                        } else {
+                            messageCount = userData.usage.messageCount || 0;
+                        }
+                    } else {
+                        // Initialize usage if it doesn't exist
+                        userRef.child('usage').set({
                             messageCount: 0,
                             lastResetTime: firebase.database.ServerValue.TIMESTAMP
                         });
                         messageCount = 0;
-                    } else {
-                        messageCount = userData.messageCount || 0;
                     }
                     
                     // Update usage count display
@@ -1367,12 +1389,13 @@
             });
             
             // Create new chat in Firebase
-            const chatsRef = database.ref('chats/' + currentUser.uid);
+            const chatsRef = database.ref(`users/${currentUser.uid}/chat_history`);
             const newChatRef = chatsRef.push();
             
             newChatRef.set({
                 createdAt: firebase.database.ServerValue.TIMESTAMP,
-                title: 'New Chat'
+                title: 'New Chat',
+                messages: {}
             });
             
             currentChatId = newChatRef.key;
@@ -1383,7 +1406,7 @@
         
         // Load chat list
         function loadChatList(userId) {
-            const chatsRef = database.ref('chats/' + userId);
+            const chatsRef = database.ref(`users/${userId}/chat_history`);
             chatsRef.orderByChild('createdAt').once('value', (snapshot) => {
                 // Clear chat history
                 chatHistory.innerHTML = '';
@@ -1446,7 +1469,7 @@
             });
             
             // Load messages
-            const messagesRef = database.ref('messages/' + currentUser.uid + '/' + chatId);
+            const messagesRef = database.ref(`users/${currentUser.uid}/chat_history/${chatId}/messages`);
             messagesRef.orderByChild('timestamp').once('value', (snapshot) => {
                 // Clear chat messages
                 welcomeScreen.style.display = 'none';
@@ -1494,7 +1517,7 @@
                 addMessageToChat('ai', restrictedResponse, modelSelector.value);
                 
                 // Save messages to Firebase
-                const messagesRef = database.ref('messages/' + currentUser.uid + '/' + currentChatId);
+                const messagesRef = database.ref(`users/${currentUser.uid}/chat_history/${currentChatId}/messages`);
                 
                 // Save user message
                 messagesRef.push().set({
@@ -1538,7 +1561,7 @@
             const selectedModel = modelSelector.value;
             
             // Save message to Firebase
-            const messagesRef = database.ref('messages/' + currentUser.uid + '/' + currentChatId);
+            const messagesRef = database.ref(`users/${currentUser.uid}/chat_history/${currentChatId}/messages`);
             const newMessageRef = messagesRef.push();
             newMessageRef.set({
                 content: message,
@@ -1664,7 +1687,7 @@
                     addMessageToChat('ai', formattedResults, model);
                     
                     // Save AI response to Firebase
-                    const messagesRef = database.ref('messages/' + currentUser.uid + '/' + currentChatId);
+                    const messagesRef = database.ref(`users/${currentUser.uid}/chat_history/${currentChatId}/messages`);
                     const newResponseRef = messagesRef.push();
                     newResponseRef.set({
                         content: formattedResults,
@@ -1689,7 +1712,7 @@
                     addMessageToChat('ai', noResultsResponse, model);
                     
                     // Save AI response to Firebase
-                    const messagesRef = database.ref('messages/' + currentUser.uid + '/' + currentChatId);
+                    const messagesRef = database.ref(`users/${currentUser.uid}/chat_history/${currentChatId}/messages`);
                     const newResponseRef = messagesRef.push();
                     newResponseRef.set({
                         content: noResultsResponse,
@@ -1714,7 +1737,7 @@
         function updateChatTitle(message) {
             if (!currentUser || !currentChatId) return;
             
-            const chatRef = database.ref('chats/' + currentUser.uid + '/' + currentChatId);
+            const chatRef = database.ref(`users/${currentUser.uid}/chat_history/${currentChatId}`);
             chatRef.once('value', (snapshot) => {
                 const chat = snapshot.val();
                 
@@ -1746,7 +1769,7 @@
             updateUsageCount();
             
             // Update message count in Firebase
-            const userRef = database.ref('users/' + currentUser.uid);
+            const userRef = database.ref(`users/${currentUser.uid}/usage`);
             userRef.update({
                 messageCount: messageCount
             });
@@ -1755,7 +1778,7 @@
         // Show usage limit modal
         function showUsageLimitModal() {
             // Calculate reset time
-            const userRef = database.ref('users/' + currentUser.uid);
+            const userRef = database.ref(`users/${currentUser.uid}/usage`);
             userRef.once('value', (snapshot) => {
                 const userData = snapshot.val();
                 
@@ -1807,7 +1830,7 @@
             window.location.href = upiLink;
             
             // Create a payment record in Firebase
-            const paymentRef = database.ref('payments').push();
+            const paymentRef = database.ref('admin/payments').push();
             paymentRef.set({
                 userId: currentUser.uid,
                 email: userEmail,
@@ -1825,10 +1848,15 @@
                     completedAt: firebase.database.ServerValue.TIMESTAMP
                 });
                 
+                // Calculate expiry date (30 days from now)
+                const now = new Date();
+                const expiryDate = new Date(now.setDate(now.getDate() + 30));
+                
                 // Update user to Plus
-                const userRef = database.ref('users/' + currentUser.uid);
+                const userRef = database.ref(`users/${currentUser.uid}/plus_plan`);
                 userRef.update({
-                    isPlusUser: true
+                    isPlusUser: true,
+                    expiryDate: expiryDate.getTime()
                 });
                 
                 isPlusUser = true;
@@ -2205,5 +2233,5 @@
             return responses[Math.floor(Math.random() * responses.length)];
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96658e01c78e54fb',t:'MTc1MzcxODA2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96659fa403ce3aab',t:'MTc1MzcxODc4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
