@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>OrinAI Chat</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -13,6 +13,13 @@
         
         * {
             font-family: 'Inter', sans-serif;
+        }
+        
+        /* Disable auto-zoom on mobile */
+        input, textarea, select {
+            font-size: 16px !important;
+            transform-origin: left top;
+            zoom: 1;
         }
         
         .typing-indicator {
@@ -76,17 +83,40 @@
             overflow-y: auto;
         }
         
+        /* Mobile-friendly login design */
+        .login-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .login-box {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
         /* Mobile First Responsive Design */
         @media (max-width: 480px) {
-            .chat-container {
-                height: calc(100vh - 140px);
+            .login-container {
                 padding: 0.5rem;
             }
             
-            .login-container .bg-white {
-                margin: 0.5rem;
-                padding: 1rem;
+            .login-box {
+                padding: 1.5rem;
                 border-radius: 1rem;
+                max-width: 100%;
+            }
+            
+            .chat-container {
+                height: calc(100vh - 140px);
+                padding: 0.5rem;
             }
             
             .model-selector {
@@ -132,11 +162,6 @@
                 padding: 1rem;
             }
             
-            .login-container .bg-white {
-                margin: 1rem;
-                padding: 1.5rem;
-            }
-            
             .model-selector {
                 font-size: 0.75rem;
                 padding: 0.5rem 0.75rem;
@@ -176,11 +201,6 @@
             border-radius: 3px;
         }
         
-        .login-container {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        
         .google-btn {
             transition: all 0.3s ease;
         }
@@ -189,40 +209,71 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
+        
+        /* Input focus styles */
+        .form-input {
+            font-size: 16px !important;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 0.875rem 1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .auth-button {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .auth-button:hover {
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 <body class="bg-gray-50">
     <!-- Login Screen -->
-    <div id="loginScreen" class="login-container flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
             <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">OrinAI</h1>
-                <p class="text-gray-600">Sign in to continue your AI conversation</p>
+                <div class="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <span class="text-white font-bold text-2xl">O</span>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">Welcome to OrinAI</h1>
+                <p class="text-gray-600 text-sm">Sign in to start your AI conversation</p>
             </div>
             
-            <div id="authTabs" class="flex mb-6 bg-gray-100 rounded-lg p-1">
-                <button id="loginTab" class="flex-1 py-2 px-4 rounded-md bg-white text-blue-600 font-medium transition">
+            <div id="authTabs" class="flex mb-6 bg-gray-100 rounded-xl p-1">
+                <button id="loginTab" class="flex-1 py-2.5 px-4 rounded-lg bg-white text-blue-600 font-medium transition text-sm">
                     Sign In
                 </button>
-                <button id="signupTab" class="flex-1 py-2 px-4 rounded-md text-gray-600 font-medium transition">
+                <button id="signupTab" class="flex-1 py-2.5 px-4 rounded-lg text-gray-600 font-medium transition text-sm">
                     Sign Up
                 </button>
             </div>
 
             <form id="emailLoginForm" class="space-y-4 mb-6">
                 <div>
-                    <input type="email" id="email" placeholder="Email address" 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
+                    <input type="email" id="email" placeholder="Email address" class="form-input" required>
                 </div>
                 <div>
-                    <input type="password" id="password" placeholder="Password" 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
+                    <input type="password" id="password" placeholder="Password" class="form-input" required>
                 </div>
                 <div id="confirmPasswordDiv" class="hidden">
-                    <input type="password" id="confirmPassword" placeholder="Confirm Password" 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
+                    <input type="password" id="confirmPassword" placeholder="Confirm Password" class="form-input">
                 </div>
-                <button type="submit" id="authSubmitBtn" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-medium">
+                <button type="submit" id="authSubmitBtn" class="auth-button bg-blue-600 text-white hover:bg-blue-700">
                     Sign In with Email
                 </button>
             </form>
@@ -232,11 +283,11 @@
                     <div class="w-full border-t border-gray-300"></div>
                 </div>
                 <div class="relative flex justify-center text-sm">
-                    <span class="px-2 bg-white text-gray-500">Or continue with</span>
+                    <span class="px-3 bg-white text-gray-500">Or continue with</span>
                 </div>
             </div>
             
-            <button id="googleLogin" class="google-btn w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition font-medium flex items-center justify-center gap-3">
+            <button id="googleLogin" class="google-btn auth-button bg-white border-2 border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-3">
                 <svg width="20" height="20" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -246,7 +297,7 @@
                 Sign in with Google
             </button>
             
-            <p class="text-center text-sm text-gray-600 mt-6">
+            <p class="text-center text-xs text-gray-500 mt-6">
                 Secure authentication powered by Firebase
             </p>
         </div>
@@ -361,35 +412,88 @@
 
         <!-- Plus Upgrade Modal -->
         <div id="plusModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl p-6 max-w-md w-full">
+            <div class="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
                 <div class="text-center">
                     <div class="text-4xl mb-4">🌟</div>
-                    <h2 class="text-xl font-bold text-gray-800 mb-2">Upgrade to OrinAI Plus</h2>
-                    <div class="text-left space-y-3 mb-6">
-                        <div class="flex items-center gap-2">
-                            <span class="text-green-500">✓</span>
-                            <span class="text-gray-700">Unlimited daily messages</span>
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Upgrade to OrinAI Plus</h2>
+                    
+                    <!-- Benefits Section -->
+                    <div class="text-left space-y-4 mb-6 bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-gray-800 text-center mb-3">🎯 Premium Benefits</h3>
+                        <div class="flex items-center gap-3">
+                            <span class="text-green-500 text-lg">✓</span>
+                            <span class="text-gray-700"><strong>Unlimited Messages</strong> - No daily limits</span>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-green-500">✓</span>
-                            <span class="text-gray-700">Access to Orin5o (Most Advanced)</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-green-500 text-lg">✓</span>
+                            <span class="text-gray-700"><strong>Orin5o Access</strong> - Most advanced AI model</span>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-green-500">✓</span>
-                            <span class="text-gray-700">Priority support</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-green-500 text-lg">✓</span>
+                            <span class="text-gray-700"><strong>Enhanced Memory</strong> - Better conversation context</span>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-green-500">✓</span>
-                            <span class="text-gray-700">Enhanced AI memory</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-green-500 text-lg">✓</span>
+                            <span class="text-gray-700"><strong>Priority Support</strong> - Faster response times</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-green-500 text-lg">✓</span>
+                            <span class="text-gray-700"><strong>Advanced Features</strong> - Early access to new tools</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-green-500 text-lg">✓</span>
+                            <span class="text-gray-700"><strong>No Ads</strong> - Clean, distraction-free experience</span>
                         </div>
                     </div>
-                    <div class="text-3xl font-bold text-gray-800 mb-6">₹120<span class="text-lg text-gray-500">/month</span></div>
+                    
+                    <!-- Pricing -->
+                    <div class="bg-gradient-to-r from-yellow-100 to-orange-100 p-4 rounded-lg mb-6">
+                        <div class="text-3xl font-bold text-gray-800 mb-2">₹120<span class="text-lg text-gray-500">/month</span></div>
+                        <div class="text-sm text-gray-600">Billed monthly • Cancel anytime</div>
+                    </div>
+                    
+                    <!-- User Email Display -->
+                    <div class="bg-gray-50 p-3 rounded-lg mb-6">
+                        <div class="text-xs text-gray-500 mb-1">Account:</div>
+                        <div id="plusModalEmail" class="text-sm font-medium text-gray-800"></div>
+                    </div>
+                    
                     <div class="space-y-3">
-                        <button id="confirmUpgradeBtn" class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 rounded-lg font-medium hover:from-yellow-600 hover:to-orange-600 transition">
-                            Upgrade Now
+                        <button id="buyNowBtn" class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-lg font-medium hover:from-green-600 hover:to-green-700 transition flex items-center justify-center gap-2">
+                            💳 Buy Now - ₹120
                         </button>
                         <button id="closePlusModal" class="w-full bg-gray-200 text-gray-800 py-3 rounded-lg font-medium hover:bg-gray-300 transition">
                             Maybe Later
+                        </button>
+                    </div>
+                    
+                    <div class="text-xs text-gray-500 mt-4">
+                        Secure payment via UPI • Instant activation
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Processing Modal -->
+        <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl p-6 max-w-md w-full">
+                <div class="text-center">
+                    <div class="text-4xl mb-4">💳</div>
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Processing Payment</h2>
+                    <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                        <div class="text-sm text-gray-600 mb-2">Amount: <strong>₹120</strong></div>
+                        <div class="text-sm text-gray-600 mb-2">Plan: <strong>OrinAI Plus Monthly</strong></div>
+                        <div class="text-sm text-gray-600">Account: <strong id="paymentEmail"></strong></div>
+                    </div>
+                    <div class="text-sm text-gray-600 mb-6">
+                        Please complete the payment in your UPI app. Your Plus subscription will be activated automatically after successful payment.
+                    </div>
+                    <div class="space-y-3">
+                        <button id="paymentCompleteBtn" class="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition">
+                            ✓ Payment Completed
+                        </button>
+                        <button id="cancelPaymentBtn" class="w-full bg-gray-200 text-gray-800 py-3 rounded-lg font-medium hover:bg-gray-300 transition">
+                            Cancel Payment
                         </button>
                     </div>
                 </div>
@@ -400,7 +504,9 @@
         <div class="chat-container px-2 sm:px-4 md:px-6 py-2 sm:py-4" id="chatMessages">
             <div class="max-w-4xl mx-auto">
                 <div class="text-center py-4 sm:py-6 md:py-8">
-                    <div class="text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-4">🤖</div>
+                    <div class="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white font-bold text-2xl">O</span>
+                    </div>
                     <h2 class="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-1 sm:mb-2">Welcome to OrinAI</h2>
                     <p class="text-sm sm:text-base text-gray-600">Choose a model above and start your conversation!</p>
                 </div>
@@ -412,7 +518,7 @@
             <div class="max-w-4xl mx-auto">
                 <div class="flex items-start gap-2 sm:gap-3 mb-2 sm:mb-4">
                     <div class="w-6 h-6 sm:w-8 sm:h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm sm:text-base">
-                        🤖
+                        AI
                     </div>
                     <div class="bg-gray-100 rounded-2xl typing-indicator">
                         <div class="typing-dot"></div>
@@ -430,7 +536,8 @@
                     <div class="flex-1 relative">
                         <textarea id="messageInput" 
                                 placeholder="Type your message here..." 
-                                class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-2xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-sm sm:text-base"
+                                class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-2xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                                style="font-size: 16px !important;"
                                 rows="1"></textarea>
                     </div>
                     <button id="sendBtn" 
@@ -477,6 +584,8 @@
         let dailyMessageCount = 0;
         let userSubscription = 'free'; // 'free' or 'plus'
         let aiMemory = {};
+        let aiResponses = {}; // Firebase stored responses
+        let commandRestrictions = {}; // Firebase stored restrictions
 
         // Model configurations
         const modelConfigs = {
@@ -533,16 +642,16 @@
         // Tab switching
         document.getElementById('loginTab').addEventListener('click', () => {
             isSignupMode = false;
-            document.getElementById('loginTab').className = 'flex-1 py-2 px-4 rounded-md bg-white text-blue-600 font-medium transition';
-            document.getElementById('signupTab').className = 'flex-1 py-2 px-4 rounded-md text-gray-600 font-medium transition';
+            document.getElementById('loginTab').className = 'flex-1 py-2.5 px-4 rounded-lg bg-white text-blue-600 font-medium transition text-sm';
+            document.getElementById('signupTab').className = 'flex-1 py-2.5 px-4 rounded-lg text-gray-600 font-medium transition text-sm';
             document.getElementById('confirmPasswordDiv').classList.add('hidden');
             document.getElementById('authSubmitBtn').textContent = 'Sign In with Email';
         });
 
         document.getElementById('signupTab').addEventListener('click', () => {
             isSignupMode = true;
-            document.getElementById('signupTab').className = 'flex-1 py-2 px-4 rounded-md bg-white text-blue-600 font-medium transition';
-            document.getElementById('loginTab').className = 'flex-1 py-2 px-4 rounded-md text-gray-600 font-medium transition';
+            document.getElementById('signupTab').className = 'flex-1 py-2.5 px-4 rounded-lg bg-white text-blue-600 font-medium transition text-sm';
+            document.getElementById('loginTab').className = 'flex-1 py-2.5 px-4 rounded-lg text-gray-600 font-medium transition text-sm';
             document.getElementById('confirmPasswordDiv').classList.remove('hidden');
             document.getElementById('authSubmitBtn').textContent = 'Create Account';
         });
@@ -628,6 +737,17 @@
         // Model selection
         document.querySelectorAll('.model-selector').forEach(btn => {
             btn.addEventListener('click', () => {
+                const model = btn.dataset.model;
+                
+                // Check if Plus-only model requires subscription
+                if (modelConfigs[model].plusOnly && userSubscription !== 'plus') {
+                    if (currentUser) {
+                        document.getElementById('plusModalEmail').textContent = currentUser.email;
+                    }
+                    document.getElementById('plusModal').classList.remove('hidden');
+                    return;
+                }
+                
                 // Remove active state from all buttons
                 document.querySelectorAll('.model-selector').forEach(b => {
                     b.style.opacity = '0.7';
@@ -638,7 +758,7 @@
                 btn.style.opacity = '1';
                 btn.style.transform = 'scale(1)';
                 
-                selectedModel = btn.dataset.model;
+                selectedModel = model;
                 document.getElementById('currentModel').textContent = modelConfigs[selectedModel].name;
                 
                 // Add model introduction message
@@ -764,7 +884,7 @@
                 <div class="max-w-4xl mx-auto">
                     <div class="flex items-start gap-2 sm:gap-3 ${isUser ? 'flex-row-reverse' : ''}">
                         <div class="w-6 h-6 sm:w-8 sm:h-8 ${isUser ? 'bg-blue-600' : getModelTheme(model)} rounded-full flex items-center justify-center text-white font-medium text-xs sm:text-sm">
-                            ${isUser ? '👤' : (modelConfig ? modelConfig.emoji : '🤖')}
+                            ${isUser ? '👤' : (modelConfig ? modelConfig.emoji : 'AI')}
                         </div>
                         <div class="flex-1 ${isUser ? 'text-right' : ''}">
                             <div class="text-xs text-gray-500 mb-1 ${isUser ? 'text-right' : ''}">
@@ -856,14 +976,46 @@
             return SENSITIVE_KEYWORDS.some(keyword => lowerMessage.includes(keyword));
         }
 
-        // Enhanced AI response with memory and learning
+        // Load AI responses and restrictions from Firebase
+        function loadAIDataFromFirebase() {
+            // Load AI responses
+            database.ref('aiResponses').once('value', (snapshot) => {
+                const responses = snapshot.val();
+                if (responses) {
+                    aiResponses = responses;
+                }
+            });
+            
+            // Load command restrictions
+            database.ref('commandRestrictions').once('value', (snapshot) => {
+                const restrictions = snapshot.val();
+                if (restrictions) {
+                    commandRestrictions = restrictions;
+                }
+            });
+        }
+
+        // Enhanced AI response with Firebase data and memory
         function generateAIResponse(userMessage, model) {
             const config = modelConfigs[model];
             const lowerMessage = userMessage.toLowerCase();
             
+            // Check command restrictions from Firebase
+            for (const restriction in commandRestrictions) {
+                if (lowerMessage.includes(restriction.toLowerCase())) {
+                    return commandRestrictions[restriction];
+                }
+            }
+            
             // Check for sensitive content
             if (containsSensitiveContent(userMessage)) {
                 return `I understand you're asking about something, but I'm designed to keep our conversations positive and helpful. ${config.emoji} Let's talk about something else! How can I assist you with information, learning, or creative tasks?`;
+            }
+            
+            // Check Firebase stored responses first
+            const responseKey = lowerMessage.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '');
+            if (aiResponses[responseKey]) {
+                return `${config.emoji} ${aiResponses[responseKey]}`;
             }
             
             // Check AI memory for similar questions
@@ -988,15 +1140,13 @@
 
         function saveChatHistory() {
             if (currentUser && currentChatId) {
-                // Save to local storage
+                // Save to Firebase (primary storage)
                 allChats[currentChatId] = {
                     messages: chatHistory,
                     timestamp: Date.now()
                 };
-                localStorage.setItem(`chats_${currentUser.uid}`, JSON.stringify(allChats));
                 
-                // Save to Firebase
-                database.ref(`chats/${currentUser.uid}`).set(allChats);
+                database.ref(`users/${currentUser.uid}/chats`).set(allChats);
                 
                 // Save knowledge for AI learning
                 const lastMessage = chatHistory[chatHistory.length - 1];
@@ -1012,13 +1162,49 @@
                     // Store in knowledge base for AI learning
                     database.ref('knowledge').push(knowledgeEntry);
                     
+                    // Store response in Firebase for future use
+                    const responseKey = knowledgeEntry.userQuery.toLowerCase().substring(0, 30).replace(/[^a-zA-Z0-9]/g, '');
+                    database.ref(`aiResponses/${responseKey}`).set(knowledgeEntry.aiResponse);
+                    
                     // Store in AI memory
                     const memoryKey = knowledgeEntry.userQuery.toLowerCase().substring(0, 20);
                     aiMemory[memoryKey] = knowledgeEntry.aiResponse;
-                    localStorage.setItem(`aiMemory_${currentUser.uid}`, JSON.stringify(aiMemory));
+                    database.ref(`users/${currentUser.uid}/aiMemory`).set(aiMemory);
                 }
                 
                 updateChatList();
+            }
+        }
+
+        // Load user subscription status from Firebase
+        function loadUserSubscription() {
+            if (currentUser) {
+                database.ref(`users/${currentUser.uid}/subscription`).once('value', (snapshot) => {
+                    const subscription = snapshot.val();
+                    if (subscription && subscription.status === 'active' && subscription.expiryDate > Date.now()) {
+                        userSubscription = 'plus';
+                        updateUsageDisplay();
+                    } else {
+                        userSubscription = 'free';
+                        updateUsageDisplay();
+                    }
+                });
+            }
+        }
+
+        // Save subscription to Firebase
+        function saveSubscriptionToFirebase(status, expiryDate) {
+            if (currentUser) {
+                const subscriptionData = {
+                    status: status,
+                    purchaseDate: Date.now(),
+                    expiryDate: expiryDate,
+                    email: currentUser.email,
+                    amount: 120
+                };
+                
+                database.ref(`users/${currentUser.uid}/subscription`).set(subscriptionData);
+                database.ref(`subscriptions/${currentUser.uid}`).set(subscriptionData);
             }
         }
         
@@ -1043,28 +1229,28 @@
 
         function loadChatHistory() {
             if (currentUser) {
-                // Load from local storage first
-                const localChats = localStorage.getItem(`chats_${currentUser.uid}`);
-                if (localChats) {
-                    allChats = JSON.parse(localChats);
-                    updateChatList();
-                }
-                
-                // Load AI memory
-                const localMemory = localStorage.getItem(`aiMemory_${currentUser.uid}`);
-                if (localMemory) {
-                    aiMemory = JSON.parse(localMemory);
-                }
-                
-                // Load from Firebase as backup
-                database.ref(`chats/${currentUser.uid}`).once('value', (snapshot) => {
+                // Load from Firebase (primary source)
+                database.ref(`users/${currentUser.uid}/chats`).once('value', (snapshot) => {
                     const firebaseChats = snapshot.val();
                     if (firebaseChats) {
-                        allChats = { ...allChats, ...firebaseChats };
-                        localStorage.setItem(`chats_${currentUser.uid}`, JSON.stringify(allChats));
+                        allChats = firebaseChats;
                         updateChatList();
                     }
                 });
+                
+                // Load AI memory from Firebase
+                database.ref(`users/${currentUser.uid}/aiMemory`).once('value', (snapshot) => {
+                    const firebaseMemory = snapshot.val();
+                    if (firebaseMemory) {
+                        aiMemory = firebaseMemory;
+                    }
+                });
+                
+                // Load user subscription
+                loadUserSubscription();
+                
+                // Load AI data
+                loadAIDataFromFirebase();
             }
         }
 
@@ -1094,7 +1280,9 @@
             document.getElementById('chatMessages').innerHTML = `
                 <div class="max-w-4xl mx-auto">
                     <div class="text-center py-4 sm:py-6 md:py-8">
-                        <div class="text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-4">🤖</div>
+                        <div class="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <span class="text-white font-bold text-2xl">O</span>
+                        </div>
                         <h2 class="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-1 sm:mb-2">Welcome to OrinAI</h2>
                         <p class="text-sm sm:text-base text-gray-600">Choose a model above and start your conversation!</p>
                     </div>
@@ -1132,7 +1320,9 @@
                 chatMessages.innerHTML = `
                     <div class="max-w-4xl mx-auto">
                         <div class="text-center py-4 sm:py-6 md:py-8">
-                            <div class="text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-4">🤖</div>
+                            <div class="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <span class="text-white font-bold text-2xl">O</span>
+                            </div>
                             <h2 class="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-1 sm:mb-2">Welcome to OrinAI</h2>
                             <p class="text-sm sm:text-base text-gray-600">Choose a model above and start your conversation!</p>
                         </div>
@@ -1238,6 +1428,9 @@
 
         document.getElementById('upgradeToPlusBtn').addEventListener('click', () => {
             document.getElementById('limitModal').classList.add('hidden');
+            if (currentUser) {
+                document.getElementById('plusModalEmail').textContent = currentUser.email;
+            }
             document.getElementById('plusModal').classList.remove('hidden');
         });
 
@@ -1245,20 +1438,51 @@
             document.getElementById('plusModal').classList.add('hidden');
         });
 
-        document.getElementById('confirmUpgradeBtn').addEventListener('click', () => {
-            // Simulate upgrade process
+        // UPI Payment Integration
+        document.getElementById('buyNowBtn').addEventListener('click', () => {
+            if (currentUser) {
+                document.getElementById('plusModalEmail').textContent = currentUser.email;
+                document.getElementById('paymentEmail').textContent = currentUser.email;
+                
+                // Open UPI payment
+                const upiId = '7347417931@pthdfc';
+                const amount = '120';
+                const note = `OrinAI Plus Monthly - ${currentUser.email}`;
+                
+                // Create UPI payment URL
+                const upiUrl = `upi://pay?pa=${upiId}&am=${amount}&tn=${encodeURIComponent(note)}&cu=INR`;
+                
+                // Try to open UPI app
+                const link = document.createElement('a');
+                link.href = upiUrl;
+                link.click();
+                
+                // Show payment processing modal
+                document.getElementById('plusModal').classList.add('hidden');
+                document.getElementById('paymentModal').classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('paymentCompleteBtn').addEventListener('click', () => {
+            // Verify payment and activate subscription
+            const expiryDate = Date.now() + (30 * 24 * 60 * 60 * 1000); // 30 days from now
+            
             userSubscription = 'plus';
-            localStorage.setItem('userSubscription', 'plus');
-            document.getElementById('plusModal').classList.add('hidden');
+            saveSubscriptionToFirebase('active', expiryDate);
+            
+            document.getElementById('paymentModal').classList.add('hidden');
             updateUsageDisplay();
-            alert('🌟 Congratulations! You\'ve been upgraded to OrinAI Plus! Enjoy unlimited messages and access to Orin5o!');
+            
+            alert('🌟 Payment successful! Your OrinAI Plus subscription is now active. Enjoy unlimited messages and access to Orin5o!');
+        });
+
+        document.getElementById('cancelPaymentBtn').addEventListener('click', () => {
+            document.getElementById('paymentModal').classList.add('hidden');
+            document.getElementById('plusModal').classList.remove('hidden');
         });
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            // Load user subscription
-            userSubscription = localStorage.getItem('userSubscription') || 'free';
-            
             // Set Orin4o as default selected
             document.getElementById('currentModel').textContent = modelConfigs[selectedModel].name;
             
@@ -1269,7 +1493,10 @@
             // Initialize chat
             currentChatId = Date.now().toString();
             allChats[currentChatId] = { messages: [], timestamp: Date.now() };
+            
+            // Load AI data from Firebase
+            loadAIDataFromFirebase();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9664d65cd7b13e40',t:'MTc1MzcxMDU0MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9664e76794f84081',t:'MTc1MzcxMTIzOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
