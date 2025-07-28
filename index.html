@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OrinAI Chat</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script async src="https://cse.google.com/cse.js?cx=b7145043bbbac4427"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
@@ -15,49 +16,21 @@
             font-family: 'Inter', sans-serif;
         }
         
-        /* Disable auto-zoom on mobile */
-        input, textarea, select {
-            font-size: 16px !important;
-            transform-origin: left top;
-            zoom: 1;
-        }
-        
         .typing-indicator {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 12px 16px;
-        }
-        
-        .typing-dot {
+            display: inline-block;
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background-color: #6b7280;
+            background-color: #10b981;
             animation: typing 1.4s infinite ease-in-out;
         }
         
-        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
-        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        .typing-indicator:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator:nth-child(2) { animation-delay: -0.16s; }
         
         @keyframes typing {
-            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
             40% { transform: scale(1); opacity: 1; }
-        }
-        
-        .orin4o-theme {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .o4mini-theme {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-        }
-        
-        .orin42mini-theme {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
         }
         
         .message-animation {
@@ -69,246 +42,175 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        .model-selector {
-            transition: all 0.3s ease;
+        .model-glow {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
         }
         
-        .model-selector:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
+        .orin4o-style { color: #8b5cf6; }
+        .o4mini-style { color: #06b6d4; }
+        .orin42mini-style { color: #f59e0b; }
         
         .chat-container {
-            height: calc(100vh - 200px);
-            overflow-y: auto;
-        }
-        
-        /* Mobile-friendly login design */
-        .login-container {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .login-box {
-            background: white;
-            border-radius: 1.5rem;
-            padding: 2rem;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-        
-        /* Mobile First Responsive Design */
-        @media (max-width: 480px) {
-            .login-container {
-                padding: 0.5rem;
-            }
-            
-            .login-box {
-                padding: 1.5rem;
-                border-radius: 1rem;
-                max-width: 100%;
-            }
-            
-            .chat-container {
-                height: calc(100vh - 140px);
-                padding: 0.5rem;
-            }
-            
-            .model-selector {
-                font-size: 0.7rem;
-                padding: 0.4rem 0.6rem;
-                min-width: auto;
-            }
-            
-            .max-w-4xl {
-                max-width: 100%;
-                padding: 0;
-            }
-            
-            .message-bubble {
-                max-width: 85% !important;
-                font-size: 0.9rem;
-                padding: 0.75rem !important;
-            }
-            
-            .input-area {
-                padding: 0.75rem !important;
-                gap: 0.5rem !important;
-            }
-            
-            .send-button {
-                padding: 0.75rem 1rem !important;
-                font-size: 0.85rem;
-            }
-            
-            .header-mobile {
-                padding: 0.75rem 1rem !important;
-            }
-            
-            .model-selection-mobile {
-                padding: 0.75rem 1rem !important;
-                gap: 0.5rem !important;
-            }
-        }
-        
-        @media (max-width: 640px) {
-            .chat-container {
-                height: calc(100vh - 160px);
-                padding: 1rem;
-            }
-            
-            .model-selector {
-                font-size: 0.75rem;
-                padding: 0.5rem 0.75rem;
-            }
-            
-            .max-w-4xl {
-                max-width: 100%;
-                padding: 0 0.25rem;
-            }
-            
-            .message-bubble {
-                max-width: 90%;
-            }
+            height: calc(100vh - 140px);
         }
         
         @media (max-width: 768px) {
             .chat-container {
-                height: calc(100vh - 180px);
+                height: calc(100vh - 120px);
             }
-            
-            .model-selector {
-                font-size: 0.8rem;
-                padding: 0.6rem 0.8rem;
+            input, textarea, select {
+                font-size: 16px !important;
+                transform-origin: left top;
+                transform: scale(1);
             }
         }
         
-        .chat-container::-webkit-scrollbar {
-            width: 6px;
+        .sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
         }
         
-        .chat-container::-webkit-scrollbar-track {
-            background: #f1f5f9;
+        .sidebar.open {
+            transform: translateX(0);
         }
         
-        .chat-container::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
+        .code-block {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+            position: relative;
+            overflow-x: auto;
         }
         
-        .google-btn {
-            transition: all 0.3s ease;
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #374151;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
         }
         
-        .google-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        .source-link {
+            color: #10b981;
+            font-size: 12px;
+            text-decoration: underline;
         }
         
-        /* Input focus styles */
-        .form-input {
-            font-size: 16px !important;
-            border: 2px solid #e5e7eb;
-            border-radius: 0.75rem;
-            padding: 0.875rem 1rem;
-            width: 100%;
-            transition: all 0.3s ease;
-            background: #fafafa;
-        }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-        
-        .auth-button {
-            width: 100%;
-            padding: 0.875rem 1rem;
-            border-radius: 0.75rem;
-            font-weight: 500;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-        
-        .auth-button:hover {
-            transform: translateY(-1px);
+        .usage-limit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 16px 0;
         }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
     <!-- Login Screen -->
-    <div id="loginScreen" class="login-container">
-        <div class="login-box">
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-2xl w-full max-w-sm mx-auto aspect-square flex flex-col justify-center">
             <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <span class="text-white font-bold text-2xl">O</span>
-                </div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">Welcome to OrinAI</h1>
-                <p class="text-gray-600 text-sm">Sign in to start your AI conversation</p>
+                <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4">O</div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">OrinAI</h1>
+                <p class="text-gray-600 dark:text-gray-400">Created by OrionTec</p>
             </div>
             
-            <div id="authTabs" class="flex mb-6 bg-gray-100 rounded-xl p-1">
-                <button id="loginTab" class="flex-1 py-2.5 px-4 rounded-lg bg-white text-blue-600 font-medium transition text-sm">
-                    Sign In
+            <div class="space-y-4">
+                <button id="googleLogin" class="w-full flex items-center justify-center gap-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Continue with Google
                 </button>
-                <button id="signupTab" class="flex-1 py-2.5 px-4 rounded-lg text-gray-600 font-medium transition text-sm">
-                    Sign Up
-                </button>
+                
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white dark:bg-gray-800 text-gray-500">or</span>
+                    </div>
+                </div>
+                
+                <form id="emailForm" class="space-y-4">
+                    <input type="email" id="email" placeholder="Email" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
+                    <input type="password" id="password" placeholder="Password" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
+                    
+                    <div class="flex gap-2">
+                        <button type="submit" id="loginBtn" class="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors">Login</button>
+                        <button type="button" id="signupBtn" class="flex-1 bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition-colors">Sign Up</button>
+                    </div>
+                </form>
+                
+                <div id="errorMessage" class="text-red-500 text-sm text-center hidden"></div>
             </div>
+        </div>
+    </div>
 
-            <form id="emailLoginForm" class="space-y-4 mb-6">
-                <div>
-                    <input type="email" id="email" placeholder="Email address" class="form-input" required>
-                </div>
-                <div>
-                    <input type="password" id="password" placeholder="Password" class="form-input" required>
-                </div>
-                <div id="confirmPasswordDiv" class="hidden">
-                    <input type="password" id="confirmPassword" placeholder="Confirm Password" class="form-input">
-                </div>
-                <button type="submit" id="authSubmitBtn" class="auth-button bg-blue-600 text-white hover:bg-blue-700">
-                    Sign In with Email
-                </button>
-            </form>
+    <!-- Plus Plan Modal -->
+    <div id="plusModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4">+</div>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">OrinAI Plus</h2>
+                <p class="text-gray-600 dark:text-gray-400">Unlock advanced features</p>
+            </div>
             
-            <div class="relative mb-6">
-                <div class="absolute inset-0 flex items-center">
-                    <div class="w-full border-t border-gray-300"></div>
+            <div class="space-y-4 mb-6">
+                <div class="flex items-center gap-3">
+                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-gray-700 dark:text-gray-300">Access to Orin-5O model</span>
                 </div>
-                <div class="relative flex justify-center text-sm">
-                    <span class="px-3 bg-white text-gray-500">Or continue with</span>
+                <div class="flex items-center gap-3">
+                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-gray-700 dark:text-gray-300">Unlimited daily messages</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-gray-700 dark:text-gray-300">Priority support</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-gray-700 dark:text-gray-300">Advanced AI capabilities</span>
                 </div>
             </div>
             
-            <button id="googleLogin" class="google-btn auth-button bg-white border-2 border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-3">
-                <svg width="20" height="20" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-                Sign in with Google
-            </button>
+            <div class="text-center mb-6">
+                <div class="text-3xl font-bold text-gray-900 dark:text-white">₹120</div>
+                <div class="text-gray-600 dark:text-gray-400">per month</div>
+            </div>
             
-            <p class="text-center text-xs text-gray-500 mt-6">
-                Secure authentication powered by Firebase
-            </p>
+            <div class="flex gap-3">
+                <button id="closePlusModal" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</button>
+                <button id="buyPlusBtn" class="flex-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-3 rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-colors">Buy Now</button>
+            </div>
         </div>
     </div>
 
     <!-- Main Chat Interface -->
-    <div id="chatInterface" class="hidden">
+    <div id="chatInterface" class="hidden min-h-screen bg-white dark:bg-gray-900">
         <!-- Sidebar -->
-        <div id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-gray-900 text-white transform -translate-x-full transition-transform duration-300 z-50">
-            <div class="p-4 border-b border-gray-700">
-                <div class="flex items-center justify-between">
+        <div id="sidebar" class="sidebar fixed left-0 top-0 h-full w-64 bg-gray-900 text-white z-50 overflow-y-auto">
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-6">
                     <h2 class="text-lg font-semibold">Chat History</h2>
                     <button id="closeSidebar" class="text-gray-400 hover:text-white">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -316,238 +218,68 @@
                         </svg>
                     </button>
                 </div>
-                <button id="newChatBtn" class="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm font-medium">
-                    + New Chat
-                </button>
-            </div>
-            <div id="chatList" class="flex-1 overflow-y-auto p-4 space-y-2">
-                <!-- Chat history will be populated here -->
-            </div>
-            <div class="p-4 border-t border-gray-700">
-                <div class="text-xs text-gray-400 mb-2">Daily Usage</div>
-                <div class="bg-gray-800 rounded-full h-2 mb-2">
-                    <div id="usageBar" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
-                </div>
-                <div class="text-xs text-gray-400">
-                    <span id="usageText">0/90 messages</span>
-                    <span id="subscriptionBadge" class="float-right text-yellow-400">FREE</span>
+                <div id="chatHistory" class="space-y-2">
+                    <!-- Chat history will be populated here -->
                 </div>
             </div>
         </div>
 
-        <!-- Sidebar Overlay -->
-        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
-
         <!-- Header -->
-        <header class="bg-white border-b border-gray-200 header-mobile px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-1 sm:gap-2 md:gap-4">
-                    <button id="sidebarToggle" class="text-gray-600 hover:text-gray-800 mr-2">
+        <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+            <div class="flex items-center justify-between max-w-4xl mx-auto">
+                <div class="flex items-center gap-3">
+                    <button id="menuBtn" class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
                     </button>
-                    <div class="flex items-center gap-1 sm:gap-2">
-                        <div class="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
-                            <span class="text-white font-bold text-xs sm:text-sm">O</span>
-                        </div>
-                        <h1 class="text-sm sm:text-lg md:text-2xl font-bold text-gray-800">OrinAI</h1>
-                    </div>
-                    <div class="hidden sm:flex items-center gap-1 sm:gap-2">
-                        <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full"></div>
-                        <span class="text-xs sm:text-sm text-gray-600">Online</span>
-                    </div>
+                    <h1 class="text-xl font-semibold text-gray-900 dark:text-white">OrinAI</h1>
+                    <select id="modelSelect" class="bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1 text-sm">
+                        <option value="orin4o" selected>Orin-4O</option>
+                        <option value="o4mini">O4-Mini</option>
+                        <option value="orin42mini">Orin-4.2-Mini</option>
+                        <option value="orin5o" class="plus-only" disabled>Orin-5O (Plus)</option>
+                    </select>
                 </div>
-                <div class="flex items-center gap-1 sm:gap-2 md:gap-4">
-                    <span id="userEmail" class="text-xs sm:text-sm text-gray-600 max-w-20 sm:max-w-32 md:max-w-none truncate"></span>
-                    <button id="logoutBtn" class="text-red-600 hover:text-red-700 text-xs sm:text-sm font-medium px-1 sm:px-2">
-                        Logout
+                <div class="flex items-center gap-3">
+                    <div id="usageCounter" class="text-sm text-gray-600 dark:text-gray-400">
+                        <span id="usageCount">0</span>/90 today
+                    </div>
+                    <button id="logoutBtn" class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
                     </button>
                 </div>
             </div>
         </header>
 
-        <!-- Model Selection -->
-        <div class="bg-white border-b border-gray-200 model-selection-mobile px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4">
-            <div class="flex gap-2 sm:gap-3 md:gap-4 overflow-x-auto pb-1">
-                <button class="model-selector orin4o-theme px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0 opacity-100 transform scale-100" data-model="orin4o">
-                    <span class="hidden sm:inline">🧠 Orin4o - Advanced</span>
-                    <span class="sm:hidden">🧠 Orin4o</span>
-                </button>
-                <button class="model-selector o4mini-theme px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0" data-model="o4mini">
-                    <span class="hidden sm:inline">⚡ O4Mini - Fast</span>
-                    <span class="sm:hidden">⚡ O4Mini</span>
-                </button>
-                <button class="model-selector orin42mini-theme px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0" data-model="orin-4.2-mini">
-                    <span class="hidden sm:inline">🚀 Orin-4.2-Mini</span>
-                    <span class="sm:hidden">🚀 4.2-Mini</span>
-                </button>
-                <button id="orin5oBtn" class="model-selector bg-gradient-to-r from-yellow-500 to-orange-500 px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0 text-white relative" data-model="orin5o">
-                    <span class="hidden sm:inline">🌟 Orin5o - Premium</span>
-                    <span class="sm:hidden">🌟 Orin5o</span>
-                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1 rounded-full">PLUS</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Daily Limit Modal -->
-        <div id="limitModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl p-6 max-w-md w-full">
-                <div class="text-center">
-                    <div class="text-4xl mb-4">⏰</div>
-                    <h2 class="text-xl font-bold text-gray-800 mb-2">Daily Limit Reached!</h2>
-                    <p class="text-gray-600 mb-4">You've used all 90 messages for today. Your limit will reset in:</p>
-                    <div id="resetTimer" class="text-2xl font-bold text-blue-600 mb-6">12:00:00</div>
-                    <div class="space-y-3">
-                        <button id="upgradeToPlusBtn" class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 rounded-lg font-medium hover:from-yellow-600 hover:to-orange-600 transition">
-                            🌟 Get OrinAI Plus - ₹120
-                        </button>
-                        <button id="closeLimitModal" class="w-full bg-gray-200 text-gray-800 py-3 rounded-lg font-medium hover:bg-gray-300 transition">
-                            Try After 12 Hours
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Plus Upgrade Modal -->
-        <div id="plusModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-                <div class="text-center">
-                    <div class="text-4xl mb-4">🌟</div>
-                    <h2 class="text-xl font-bold text-gray-800 mb-4">Upgrade to OrinAI Plus</h2>
-                    
-                    <!-- Benefits Section -->
-                    <div class="text-left space-y-4 mb-6 bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg">
-                        <h3 class="font-semibold text-gray-800 text-center mb-3">🎯 Premium Benefits</h3>
-                        <div class="flex items-center gap-3">
-                            <span class="text-green-500 text-lg">✓</span>
-                            <span class="text-gray-700"><strong>Unlimited Messages</strong> - No daily limits</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-green-500 text-lg">✓</span>
-                            <span class="text-gray-700"><strong>Orin5o Access</strong> - Most advanced AI model</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-green-500 text-lg">✓</span>
-                            <span class="text-gray-700"><strong>Enhanced Memory</strong> - Better conversation context</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-green-500 text-lg">✓</span>
-                            <span class="text-gray-700"><strong>Priority Support</strong> - Faster response times</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-green-500 text-lg">✓</span>
-                            <span class="text-gray-700"><strong>Advanced Features</strong> - Early access to new tools</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-green-500 text-lg">✓</span>
-                            <span class="text-gray-700"><strong>No Ads</strong> - Clean, distraction-free experience</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Pricing -->
-                    <div class="bg-gradient-to-r from-yellow-100 to-orange-100 p-4 rounded-lg mb-6">
-                        <div class="text-3xl font-bold text-gray-800 mb-2">₹120<span class="text-lg text-gray-500">/month</span></div>
-                        <div class="text-sm text-gray-600">Billed monthly • Cancel anytime</div>
-                    </div>
-                    
-                    <!-- User Email Display -->
-                    <div class="bg-gray-50 p-3 rounded-lg mb-6">
-                        <div class="text-xs text-gray-500 mb-1">Account:</div>
-                        <div id="plusModalEmail" class="text-sm font-medium text-gray-800"></div>
-                    </div>
-                    
-                    <div class="space-y-3">
-                        <button id="buyNowBtn" class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-lg font-medium hover:from-green-600 hover:to-green-700 transition flex items-center justify-center gap-2">
-                            💳 Buy Now - ₹120
-                        </button>
-                        <button id="closePlusModal" class="w-full bg-gray-200 text-gray-800 py-3 rounded-lg font-medium hover:bg-gray-300 transition">
-                            Maybe Later
-                        </button>
-                    </div>
-                    
-                    <div class="text-xs text-gray-500 mt-4">
-                        Secure payment via UPI • Instant activation
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Payment Processing Modal -->
-        <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl p-6 max-w-md w-full">
-                <div class="text-center">
-                    <div class="text-4xl mb-4">💳</div>
-                    <h2 class="text-xl font-bold text-gray-800 mb-4">Processing Payment</h2>
-                    <div class="bg-blue-50 p-4 rounded-lg mb-6">
-                        <div class="text-sm text-gray-600 mb-2">Amount: <strong>₹120</strong></div>
-                        <div class="text-sm text-gray-600 mb-2">Plan: <strong>OrinAI Plus Monthly</strong></div>
-                        <div class="text-sm text-gray-600">Account: <strong id="paymentEmail"></strong></div>
-                    </div>
-                    <div class="text-sm text-gray-600 mb-6">
-                        Please complete the payment in your UPI app. Your Plus subscription will be activated automatically after successful payment.
-                    </div>
-                    <div class="space-y-3">
-                        <button id="paymentCompleteBtn" class="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition">
-                            ✓ Payment Completed
-                        </button>
-                        <button id="cancelPaymentBtn" class="w-full bg-gray-200 text-gray-800 py-3 rounded-lg font-medium hover:bg-gray-300 transition">
-                            Cancel Payment
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Chat Container -->
-        <div class="chat-container px-2 sm:px-4 md:px-6 py-2 sm:py-4" id="chatMessages">
-            <div class="max-w-4xl mx-auto">
-                <div class="text-center py-4 sm:py-6 md:py-8">
-                    <div class="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <span class="text-white font-bold text-2xl">O</span>
-                    </div>
-                    <h2 class="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-1 sm:mb-2">Welcome to OrinAI</h2>
-                    <p class="text-sm sm:text-base text-gray-600">Choose a model above and start your conversation!</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Typing Indicator -->
-        <div id="typingIndicator" class="hidden px-2 sm:px-4 md:px-6">
-            <div class="max-w-4xl mx-auto">
-                <div class="flex items-start gap-2 sm:gap-3 mb-2 sm:mb-4">
-                    <div class="w-6 h-6 sm:w-8 sm:h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm sm:text-base">
-                        AI
-                    </div>
-                    <div class="bg-gray-100 rounded-2xl typing-indicator">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
+        <div class="chat-container overflow-y-auto px-4">
+            <div id="chatMessages" class="max-w-4xl mx-auto py-4 space-y-4">
+                <div class="message-animation bg-gray-100 dark:bg-gray-800 rounded-2xl p-4 max-w-2xl">
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">O</div>
+                        <div>
+                            <p class="text-gray-900 dark:text-white">Hi! I'm OrinAI, created by OrionTec. How can I help you today? 😊</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Input Area -->
-        <div class="bg-white border-t border-gray-200 input-area px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4">
+        <div class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-4">
             <div class="max-w-4xl mx-auto">
-                <div class="flex gap-2 sm:gap-3 md:gap-4">
+                <div class="flex gap-3 items-end">
                     <div class="flex-1 relative">
-                        <textarea id="messageInput" 
-                                placeholder="Type your message here..." 
-                                class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-2xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                                style="font-size: 16px !important;"
-                                rows="1"></textarea>
+                        <textarea id="messageInput" placeholder="Message OrinAI..." class="w-full resize-none border border-gray-300 dark:border-gray-600 rounded-2xl px-4 py-3 pr-12 focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white max-h-32" rows="1"></textarea>
+                        <button id="sendBtn" class="absolute right-2 bottom-2 bg-blue-600 text-white rounded-full p-2 hover:bg-blue-700 transition-colors disabled:opacity-50">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            </svg>
+                        </button>
                     </div>
-                    <button id="sendBtn" 
-                            class="send-button bg-blue-600 text-white px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-3 rounded-2xl hover:bg-blue-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">
-                        <span class="hidden sm:inline">Send</span>
-                        <span class="sm:hidden">📤</span>
-                    </button>
-                </div>
-                <div class="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-2 text-center">
-                    Current Model: <span id="currentModel" class="font-medium">Select a model</span>
                 </div>
             </div>
         </div>
@@ -566,353 +298,217 @@
             measurementId: "G-5RFLRYTLCN"
         };
 
-        // Google Search API Configuration
-        const GOOGLE_API_KEY = "AIzaSyBJlMg1n8hI7AN0X4cdYGceDco2MkrKZXY";
-        const SEARCH_ENGINE_ID = "b7145043bbbac4427";
-
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
 
-        // Global variables
         let currentUser = null;
-        let selectedModel = 'orin4o'; // Default to Orin4o
-        let chatHistory = [];
-        let currentChatId = null;
-        let allChats = {};
-        let dailyMessageCount = 0;
-        let userSubscription = 'free'; // 'free' or 'plus'
-        let aiMemory = {};
-        let aiResponses = {}; // Firebase stored responses
-        let commandRestrictions = {}; // Firebase stored restrictions
+        let currentModel = 'orin4o';
+        let dailyUsage = 0;
+        let isPlus = false;
+        let knowledgeBase = {};
+        const GOOGLE_API_KEY = 'AIzaSyBJlMg1n8hI7AN0X4cdYGceDco2MkrKZXY';
+        const SEARCH_ENGINE_ID = 'b7145043bbbac4427';
 
-        // Model configurations
-        const modelConfigs = {
-            'orin4o': {
-                name: 'Orin4o',
-                personality: 'Smart and helpful AI assistant',
-                emoji: '🧠',
-                responseStyle: 'natural',
-                knowledge: 'Advanced AI with natural conversation abilities',
-                limit: 90
-            },
-            'o4mini': {
-                name: 'O4Mini',
-                personality: 'Quick and efficient AI helper',
-                emoji: '⚡',
-                responseStyle: 'fast',
-                knowledge: 'Fast AI for quick responses',
-                limit: 90
-            },
-            'orin-4.2-mini': {
-                name: 'Orin-4.2-Mini',
-                personality: 'Balanced AI with creative thinking',
-                emoji: '🚀',
-                responseStyle: 'creative',
-                knowledge: 'Creative AI for innovative solutions',
-                limit: 90
-            },
-            'orin5o': {
-                name: 'Orin5o',
-                personality: 'Most advanced AI with superior intelligence',
-                emoji: '🌟',
-                responseStyle: 'advanced',
-                knowledge: 'Premium AI with unlimited capabilities',
-                limit: 'unlimited',
-                plusOnly: true
+        // DOM Elements
+        const loginScreen = document.getElementById('loginScreen');
+        const chatInterface = document.getElementById('chatInterface');
+        const emailForm = document.getElementById('emailForm');
+        const googleLogin = document.getElementById('googleLogin');
+        const errorMessage = document.getElementById('errorMessage');
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const modelSelect = document.getElementById('modelSelect');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const menuBtn = document.getElementById('menuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const usageCount = document.getElementById('usageCount');
+        const plusModal = document.getElementById('plusModal');
+        const closePlusModal = document.getElementById('closePlusModal');
+        const buyPlusBtn = document.getElementById('buyPlusBtn');
+
+        // Auth State Observer
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                loadUserData();
+                showChatInterface();
+            } else {
+                showLoginScreen();
             }
-        };
-
-        // Daily limits
-        const DAILY_LIMITS = {
-            free: 90,
-            plus: 'unlimited'
-        };
-
-        // Sensitive content filter
-        const SENSITIVE_KEYWORDS = [
-            'violence', 'harm', 'illegal', 'drugs', 'weapon', 'suicide', 'hate', 'discrimination',
-            'adult content', 'explicit', 'inappropriate', 'offensive', 'dangerous'
-        ];
-
-        // Global auth state
-        let isSignupMode = false;
-
-        // Tab switching
-        document.getElementById('loginTab').addEventListener('click', () => {
-            isSignupMode = false;
-            document.getElementById('loginTab').className = 'flex-1 py-2.5 px-4 rounded-lg bg-white text-blue-600 font-medium transition text-sm';
-            document.getElementById('signupTab').className = 'flex-1 py-2.5 px-4 rounded-lg text-gray-600 font-medium transition text-sm';
-            document.getElementById('confirmPasswordDiv').classList.add('hidden');
-            document.getElementById('authSubmitBtn').textContent = 'Sign In with Email';
         });
 
-        document.getElementById('signupTab').addEventListener('click', () => {
-            isSignupMode = true;
-            document.getElementById('signupTab').className = 'flex-1 py-2.5 px-4 rounded-lg bg-white text-blue-600 font-medium transition text-sm';
-            document.getElementById('loginTab').className = 'flex-1 py-2.5 px-4 rounded-lg text-gray-600 font-medium transition text-sm';
-            document.getElementById('confirmPasswordDiv').classList.remove('hidden');
-            document.getElementById('authSubmitBtn').textContent = 'Create Account';
-        });
+        // Load user data
+        async function loadUserData() {
+            const userRef = database.ref(`users/${currentUser.uid}`);
+            const snapshot = await userRef.once('value');
+            const userData = snapshot.val() || {};
+            
+            dailyUsage = userData.dailyUsage || 0;
+            isPlus = userData.isPlus || false;
+            knowledgeBase = userData.knowledgeBase || {};
+            
+            updateUsageDisplay();
+            updateModelAccess();
+            
+            // Reset daily usage if it's a new day
+            const today = new Date().toDateString();
+            if (userData.lastUsageDate !== today) {
+                dailyUsage = 0;
+                userRef.update({
+                    dailyUsage: 0,
+                    lastUsageDate: today
+                });
+            }
+        }
 
-        // Authentication handlers
-        document.getElementById('emailLoginForm').addEventListener('submit', async (e) => {
+        function updateUsageDisplay() {
+            usageCount.textContent = dailyUsage;
+            if (isPlus) {
+                document.getElementById('usageCounter').innerHTML = '<span class="text-yellow-500">Plus ∞</span>';
+            }
+        }
+
+        function updateModelAccess() {
+            const orin5oOption = modelSelect.querySelector('option[value="orin5o"]');
+            if (isPlus) {
+                orin5oOption.disabled = false;
+                orin5oOption.textContent = 'Orin-5O';
+            }
+        }
+
+        // Show/Hide Screens
+        function showLoginScreen() {
+            loginScreen.classList.remove('hidden');
+            chatInterface.classList.add('hidden');
+        }
+
+        function showChatInterface() {
+            loginScreen.classList.add('hidden');
+            chatInterface.classList.remove('hidden');
+        }
+
+        // Error Handling
+        function showError(message) {
+            const friendlyMessages = {
+                'auth/invalid-login-credentials': 'Invalid password. Please try again.',
+                'auth/email-already-in-use': 'An account already exists with this email.',
+                'auth/weak-password': 'Password should be at least 6 characters.',
+                'auth/invalid-email': 'Please enter a valid email address.',
+                'auth/user-not-found': 'No account found with this email.',
+                'auth/wrong-password': 'Invalid password. Please try again.'
+            };
+            
+            errorMessage.textContent = friendlyMessages[message] || message;
+            errorMessage.classList.remove('hidden');
+            setTimeout(() => errorMessage.classList.add('hidden'), 5000);
+        }
+
+        // Email/Password Authentication
+        emailForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            
-            if (isSignupMode) {
-                const confirmPassword = document.getElementById('confirmPassword').value;
-                
-                if (password !== confirmPassword) {
-                    alert('Passwords do not match!');
-                    return;
-                }
-                
-                if (password.length < 6) {
-                    alert('Password must be at least 6 characters long!');
-                    return;
-                }
-                
-                try {
-                    await auth.createUserWithEmailAndPassword(email, password);
-                    alert('Account created successfully! Welcome to OrinAI!');
-                } catch (error) {
-                    if (error.code === 'auth/email-already-in-use') {
-                        alert('An account already exists with this email. Please sign in instead!');
-                    } else if (error.code === 'auth/weak-password') {
-                        alert('Password is too weak. Please use a stronger password!');
-                    } else if (error.code === 'auth/invalid-email') {
-                        alert('Please enter a valid email address!');
-                    } else {
-                        alert('Account creation failed. Please try again!');
-                    }
-                }
-            } else {
-                try {
-                    await auth.signInWithEmailAndPassword(email, password);
-                } catch (error) {
-                    if (error.code === 'auth/user-not-found') {
-                        alert('No account found with this email. Please sign up first!');
-                    } else if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-login-credentials') {
-                        alert('Invalid password. Please check your password and try again!');
-                    } else if (error.code === 'auth/invalid-email') {
-                        alert('Please enter a valid email address!');
-                    } else {
-                        alert('Login failed. Please check your credentials and try again!');
-                    }
-                }
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                showError(error.code);
             }
         });
 
-        document.getElementById('googleLogin').addEventListener('click', async () => {
+        document.getElementById('signupBtn').addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                showError('Please fill in all fields.');
+                return;
+            }
+
+            try {
+                await auth.createUserWithEmailAndPassword(email, password);
+            } catch (error) {
+                showError(error.code);
+            }
+        });
+
+        // Google Authentication
+        googleLogin.addEventListener('click', async () => {
             const provider = new firebase.auth.GoogleAuthProvider();
             try {
                 await auth.signInWithPopup(provider);
             } catch (error) {
-                alert('Google login failed: ' + error.message);
+                showError(error.message);
             }
         });
 
-        document.getElementById('logoutBtn').addEventListener('click', () => {
+        // Logout
+        logoutBtn.addEventListener('click', () => {
             auth.signOut();
         });
 
-        // Auth state observer
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                currentUser = user;
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById('chatInterface').classList.remove('hidden');
-                document.getElementById('userEmail').textContent = user.email;
-                loadChatHistory();
-            } else {
-                currentUser = null;
-                document.getElementById('loginScreen').classList.remove('hidden');
-                document.getElementById('chatInterface').classList.add('hidden');
-            }
+        // Model Selection
+        modelSelect.addEventListener('change', (e) => {
+            currentModel = e.target.value;
+            addSystemMessage(`Switched to ${getModelDisplayName(currentModel)} model`);
         });
 
-        // Model selection
-        document.querySelectorAll('.model-selector').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const model = btn.dataset.model;
-                
-                // Check if Plus-only model requires subscription
-                if (modelConfigs[model].plusOnly && userSubscription !== 'plus') {
-                    if (currentUser) {
-                        document.getElementById('plusModalEmail').textContent = currentUser.email;
-                    }
-                    document.getElementById('plusModal').classList.remove('hidden');
-                    return;
-                }
-                
-                // Remove active state from all buttons
-                document.querySelectorAll('.model-selector').forEach(b => {
-                    b.style.opacity = '0.7';
-                    b.style.transform = 'scale(0.95)';
-                });
-                
-                // Set active state
-                btn.style.opacity = '1';
-                btn.style.transform = 'scale(1)';
-                
-                selectedModel = model;
-                document.getElementById('currentModel').textContent = modelConfigs[selectedModel].name;
-                
-                // Add model introduction message
-                addMessage('ai', `Hello! I'm ${modelConfigs[selectedModel].name} ${modelConfigs[selectedModel].emoji}. ${modelConfigs[selectedModel].knowledge}. How can I help you today?`, selectedModel);
-            });
-        });
-
-        // Message handling
-        document.getElementById('sendBtn').addEventListener('click', sendMessage);
-        document.getElementById('messageInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-
-        // Auto-resize textarea
-        document.getElementById('messageInput').addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = this.scrollHeight + 'px';
-        });
-
-        async function sendMessage() {
-            // Check daily limit first
-            if (!checkDailyLimit()) {
-                showLimitModal();
-                return;
-            }
-
-            // Check if Plus-only model is selected without subscription
-            if (modelConfigs[selectedModel].plusOnly && userSubscription !== 'plus') {
-                document.getElementById('plusModal').classList.remove('hidden');
-                return;
-            }
-
-            const messageInput = document.getElementById('messageInput');
-            const message = messageInput.value.trim();
-            
-            if (!message) return;
-
-            // Increment daily count
-            incrementDailyCount();
-
-            // Add user message
-            addMessage('user', message);
-            messageInput.value = '';
-            messageInput.style.height = 'auto';
-
-            // Show typing indicator
-            showTypingIndicator();
-
-            // Check if user wants to search
-            const lowerMessage = message.toLowerCase();
-            if (lowerMessage.startsWith('search ')) {
-                const searchQuery = message.substring(7); // Remove "search " prefix
-                
-                try {
-                    const searchResult = await performGoogleSearch(searchQuery);
-                    hideTypingIndicator();
-                    
-                    if (searchResult.success) {
-                        addMessage('ai', searchResult.results, selectedModel, searchResult.sources);
-                    } else {
-                        addMessage('ai', searchResult.message, selectedModel);
-                    }
-                } catch (error) {
-                    hideTypingIndicator();
-                    addMessage('ai', 'Sorry, there was an error performing the search. Please try again.', selectedModel);
-                }
-                
-                saveChatHistory();
-                return;
-            }
-
-            // Regular AI response
-            setTimeout(async () => {
-                hideTypingIndicator();
-                
-                // First check knowledge base
-                const knowledgeResult = await searchKnowledgeBase(message);
-                let aiResponse;
-                
-                if (knowledgeResult && Math.random() > 0.3) {
-                    // Use knowledge base response 70% of the time if found
-                    aiResponse = `I remember discussing something similar! ${modelConfigs[selectedModel].emoji} ${knowledgeResult.aiResponse}`;
-                } else {
-                    // Generate new response
-                    aiResponse = generateAIResponse(message, selectedModel);
-                }
-                
-                addMessage('ai', aiResponse, selectedModel);
-                saveChatHistory();
-            }, 1500 + Math.random() * 1000);
+        function getModelDisplayName(model) {
+            const names = {
+                'orin4o': 'Orin-4O',
+                'o4mini': 'O4-Mini',
+                'orin42mini': 'Orin-4.2-Mini'
+            };
+            return names[model] || model;
         }
 
-        function addMessage(sender, content, model = null, sources = null) {
-            const chatMessages = document.getElementById('chatMessages');
+        function getModelStyle(model) {
+            const styles = {
+                'orin4o': 'orin4o-style',
+                'o4mini': 'o4mini-style',
+                'orin42mini': 'orin42mini-style'
+            };
+            return styles[model] || '';
+        }
+
+        // Message Handling
+        function addMessage(content, isUser = false, model = null) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = 'message-animation mb-6';
-
-            const isUser = sender === 'user';
-            const modelConfig = model ? modelConfigs[model] : null;
-
-            let sourcesHtml = '';
-            if (sources && sources.length > 0) {
-                sourcesHtml = `
-                    <div class="mt-3 pt-3 border-t border-gray-200">
-                        <div class="text-xs text-green-600 font-medium mb-2">📚 Sources:</div>
-                        <div class="space-y-1">
-                            ${sources.map(source => `
-                                <div class="text-xs">
-                                    <a href="${source.link}" target="_blank" class="text-green-600 hover:text-green-700 hover:underline">
-                                        🔗 ${source.title}
-                                    </a>
-                                </div>
-                            `).join('')}
+            messageDiv.className = 'message-animation';
+            
+            if (isUser) {
+                messageDiv.innerHTML = `
+                    <div class="flex justify-end">
+                        <div class="bg-blue-600 text-white rounded-2xl px-4 py-3 max-w-2xl">
+                            <p>${content}</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const modelClass = model ? getModelStyle(model) : '';
+                let formattedContent = formatMessage(content);
+                
+                messageDiv.innerHTML = `
+                    <div class="bg-gray-100 dark:bg-gray-800 rounded-2xl p-4 max-w-2xl">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">O</div>
+                            <div class="flex-1">
+                                <div class="text-gray-900 dark:text-white ${modelClass}">${formattedContent}</div>
+                                ${model ? `<p class="text-xs text-gray-500 mt-1">${getModelDisplayName(model)}</p>` : ''}
+                            </div>
                         </div>
                     </div>
                 `;
             }
-
-            messageDiv.innerHTML = `
-                <div class="max-w-4xl mx-auto">
-                    <div class="flex items-start gap-2 sm:gap-3 ${isUser ? 'flex-row-reverse' : ''}">
-                        <div class="w-6 h-6 sm:w-8 sm:h-8 ${isUser ? 'bg-blue-600' : getModelTheme(model)} rounded-full flex items-center justify-center text-white font-medium text-xs sm:text-sm">
-                            ${isUser ? '👤' : (modelConfig ? modelConfig.emoji : 'AI')}
-                        </div>
-                        <div class="flex-1 ${isUser ? 'text-right' : ''}">
-                            <div class="text-xs text-gray-500 mb-1 ${isUser ? 'text-right' : ''}">
-                                ${isUser ? 'You' : (modelConfig ? modelConfig.name : 'AI')}
-                                <span class="hidden sm:inline">${model ? ` • ${new Date().toLocaleTimeString()}` : ''}</span>
-                            </div>
-                            <div class="message-bubble bg-${isUser ? 'blue-600 text-white' : 'gray-100 text-gray-800'} rounded-2xl px-3 py-2 sm:px-4 sm:py-3 inline-block max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl text-sm sm:text-base">
-                                ${formatMessage(content)}
-                                ${sourcesHtml}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-
+            
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            // Add to chat history
-            chatHistory.push({
-                sender,
-                content,
-                model,
-                sources,
-                timestamp: Date.now()
-            });
         }
 
+        // Format message with code blocks and sources
         function formatMessage(content) {
-            // Check if content contains HTML code
-            const htmlCodeRegex = /<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9664f08f14c8594b',t:'MTc1MzcxMTYxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+            // Handle code blocks
+            content = content.replace(/<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'966536bf631a40b1',t:'MTc1MzcxNDQ4OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
