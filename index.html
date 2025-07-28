@@ -8,7 +8,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script async src="https://cse.google.com/cse.js?cx=b7145043bbbac4427"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
@@ -46,9 +45,18 @@
             box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
         }
         
-        .orin4o-style { color: #8b5cf6; }
-        .o4mini-style { color: #06b6d4; }
-        .orin42mini-style { color: #f59e0b; }
+        .orin4o-style { 
+            color: #8b5cf6; 
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+        }
+        .o4mini-style { 
+            color: #06b6d4; 
+            text-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+        }
+        .orin42mini-style { 
+            color: #f59e0b; 
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+        }
         
         .chat-container {
             height: calc(100vh - 140px);
@@ -74,56 +82,35 @@
             transform: translateX(0);
         }
         
-        .code-block {
-            background: #1e1e1e;
-            border-radius: 8px;
-            padding: 16px;
-            margin: 12px 0;
-            position: relative;
-            overflow-x: auto;
-        }
-        
-        .copy-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: #374151;
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
-        }
-        
-        .source-link {
-            color: #10b981;
-            font-size: 12px;
-            text-decoration: underline;
-        }
-        
-        .usage-limit {
+        .gradient-text {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 16px;
-            border-radius: 12px;
-            text-align: center;
-            margin: 16px 0;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
     <!-- Login Screen -->
     <div id="loginScreen" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
-        <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-2xl w-full max-w-sm mx-auto aspect-square flex flex-col justify-center">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-2xl w-full max-w-md mx-auto">
             <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4">O</div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">OrinAI</h1>
+                <div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-3xl mx-auto mb-4 pulse-animation">O</div>
+                <h1 class="text-4xl font-bold gradient-text mb-2">OrinAI</h1>
                 <p class="text-gray-600 dark:text-gray-400">Created by OrionTec</p>
             </div>
             
             <div class="space-y-4">
-                <button id="googleLogin" class="w-full flex items-center justify-center gap-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                <button id="googleLogin" class="w-full flex items-center justify-center gap-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 shadow-md hover:shadow-lg">
                     <svg class="w-5 h-5" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -143,64 +130,16 @@
                 </div>
                 
                 <form id="emailForm" class="space-y-4">
-                    <input type="email" id="email" placeholder="Email" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
-                    <input type="password" id="password" placeholder="Password" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
+                    <input type="email" id="email" placeholder="Email address" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200">
+                    <input type="password" id="password" placeholder="Password" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200">
                     
-                    <div class="flex gap-2">
-                        <button type="submit" id="loginBtn" class="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors">Login</button>
-                        <button type="button" id="signupBtn" class="flex-1 bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition-colors">Sign Up</button>
+                    <div class="flex gap-3">
+                        <button type="submit" id="loginBtn" class="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg font-medium">Login</button>
+                        <button type="button" id="signupBtn" class="flex-1 bg-gray-600 text-white py-3 rounded-xl hover:bg-gray-700 transition-all duration-200 shadow-md hover:shadow-lg font-medium">Sign Up</button>
                     </div>
                 </form>
                 
-                <div id="errorMessage" class="text-red-500 text-sm text-center hidden"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Plus Plan Modal -->
-    <div id="plusModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full">
-            <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4">+</div>
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">OrinAI Plus</h2>
-                <p class="text-gray-600 dark:text-gray-400">Unlock advanced features</p>
-            </div>
-            
-            <div class="space-y-4 mb-6">
-                <div class="flex items-center gap-3">
-                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                    </svg>
-                    <span class="text-gray-700 dark:text-gray-300">Access to Orin-5O model</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                    </svg>
-                    <span class="text-gray-700 dark:text-gray-300">Unlimited daily messages</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                    </svg>
-                    <span class="text-gray-700 dark:text-gray-300">Priority support</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                    </svg>
-                    <span class="text-gray-700 dark:text-gray-300">Advanced AI capabilities</span>
-                </div>
-            </div>
-            
-            <div class="text-center mb-6">
-                <div class="text-3xl font-bold text-gray-900 dark:text-white">₹120</div>
-                <div class="text-gray-600 dark:text-gray-400">per month</div>
-            </div>
-            
-            <div class="flex gap-3">
-                <button id="closePlusModal" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</button>
-                <button id="buyPlusBtn" class="flex-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-3 rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-colors">Buy Now</button>
+                <div id="errorMessage" class="text-red-500 text-sm text-center hidden bg-red-50 dark:bg-red-900/20 p-3 rounded-lg"></div>
             </div>
         </div>
     </div>
@@ -208,45 +147,42 @@
     <!-- Main Chat Interface -->
     <div id="chatInterface" class="hidden min-h-screen bg-white dark:bg-gray-900">
         <!-- Sidebar -->
-        <div id="sidebar" class="sidebar fixed left-0 top-0 h-full w-64 bg-gray-900 text-white z-50 overflow-y-auto">
-            <div class="p-4">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-lg font-semibold">Chat History</h2>
-                    <button id="closeSidebar" class="text-gray-400 hover:text-white">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div id="sidebar" class="sidebar fixed left-0 top-0 h-full w-80 bg-gray-900 text-white z-50 overflow-y-auto shadow-2xl">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-xl font-semibold">Chat History</h2>
+                    <button id="closeSidebar" class="text-gray-400 hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
                 </div>
-                <div id="chatHistory" class="space-y-2">
+                <div id="chatHistory" class="space-y-3">
                     <!-- Chat history will be populated here -->
                 </div>
             </div>
         </div>
 
         <!-- Header -->
-        <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
-            <div class="flex items-center justify-between max-w-4xl mx-auto">
-                <div class="flex items-center gap-3">
-                    <button id="menuBtn" class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 shadow-sm">
+            <div class="flex items-center justify-between max-w-6xl mx-auto">
+                <div class="flex items-center gap-4">
+                    <button id="menuBtn" class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
                     </button>
-                    <h1 class="text-xl font-semibold text-gray-900 dark:text-white">OrinAI</h1>
-                    <select id="modelSelect" class="bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1 text-sm">
+                    <h1 class="text-2xl font-bold gradient-text">OrinAI</h1>
+                    <select id="modelSelect" class="bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm font-medium model-glow">
                         <option value="orin4o" selected>Orin-4O</option>
                         <option value="o4mini">O4-Mini</option>
                         <option value="orin42mini">Orin-4.2-Mini</option>
-                        <option value="orin5o" class="plus-only" disabled>Orin-5O (Plus)</option>
                     </select>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div id="usageCounter" class="text-sm text-gray-600 dark:text-gray-400">
-                        <span id="usageCount">0</span>/90 today
-                    </div>
-                    <button id="logoutBtn" class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="flex items-center gap-4">
+                    <div id="userInfo" class="text-sm text-gray-600 dark:text-gray-400"></div>
+                    <button id="logoutBtn" class="text-gray-600 dark:text-gray-400 hover:text-red-500 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                         </svg>
                     </button>
@@ -255,13 +191,14 @@
         </header>
 
         <!-- Chat Container -->
-        <div class="chat-container overflow-y-auto px-4">
-            <div id="chatMessages" class="max-w-4xl mx-auto py-4 space-y-4">
-                <div class="message-animation bg-gray-100 dark:bg-gray-800 rounded-2xl p-4 max-w-2xl">
-                    <div class="flex items-start gap-3">
-                        <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">O</div>
+        <div class="chat-container overflow-y-auto px-6">
+            <div id="chatMessages" class="max-w-4xl mx-auto py-6 space-y-6">
+                <div class="message-animation bg-gray-100 dark:bg-gray-800 rounded-2xl p-6 max-w-3xl shadow-sm">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg pulse-animation">O</div>
                         <div>
-                            <p class="text-gray-900 dark:text-white">Hi! I'm OrinAI, created by OrionTec. How can I help you today? 😊</p>
+                            <p class="text-gray-900 dark:text-white text-lg">Hi! I'm OrinAI, created by OrionTec. How can I help you today? 😊</p>
+                            <p class="text-xs text-gray-500 mt-2">Orin-4O Model</p>
                         </div>
                     </div>
                 </div>
@@ -269,13 +206,13 @@
         </div>
 
         <!-- Input Area -->
-        <div class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-4">
+        <div class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-4 shadow-lg">
             <div class="max-w-4xl mx-auto">
-                <div class="flex gap-3 items-end">
+                <div class="flex gap-4 items-end">
                     <div class="flex-1 relative">
-                        <textarea id="messageInput" placeholder="Message OrinAI..." class="w-full resize-none border border-gray-300 dark:border-gray-600 rounded-2xl px-4 py-3 pr-12 focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white max-h-32" rows="1"></textarea>
-                        <button id="sendBtn" class="absolute right-2 bottom-2 bg-blue-600 text-white rounded-full p-2 hover:bg-blue-700 transition-colors disabled:opacity-50">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <textarea id="messageInput" placeholder="Message OrinAI..." class="w-full resize-none border border-gray-300 dark:border-gray-600 rounded-2xl px-6 py-4 pr-14 focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white max-h-32 text-lg transition-all duration-200" rows="1"></textarea>
+                        <button id="sendBtn" class="absolute right-3 bottom-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full p-3 hover:from-purple-700 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 shadow-lg hover:shadow-xl">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                             </svg>
                         </button>
@@ -305,16 +242,10 @@
         const auth = firebase.auth();
         const database = firebase.database();
 
-        // Enable persistence
-        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-
         let currentUser = null;
         let currentModel = 'orin4o';
-        let dailyUsage = 0;
-        let isPlus = false;
         let knowledgeBase = {};
-        const GOOGLE_API_KEY = 'AIzaSyBJlMg1n8hI7AN0X4cdYGceDco2MkrKZXY';
-        const SEARCH_ENGINE_ID = 'b7145043bbbac4427';
+        let conversationHistory = [];
 
         // DOM Elements
         const loginScreen = document.getElementById('loginScreen');
@@ -330,10 +261,7 @@
         const menuBtn = document.getElementById('menuBtn');
         const sidebar = document.getElementById('sidebar');
         const closeSidebar = document.getElementById('closeSidebar');
-        const usageCount = document.getElementById('usageCount');
-        const plusModal = document.getElementById('plusModal');
-        const closePlusModal = document.getElementById('closePlusModal');
-        const buyPlusBtn = document.getElementById('buyPlusBtn');
+        const userInfo = document.getElementById('userInfo');
 
         // Auth State Observer
         auth.onAuthStateChanged((user) => {
@@ -341,61 +269,38 @@
                 currentUser = user;
                 loadUserData();
                 showChatInterface();
+                updateUserInfo();
             } else {
                 showLoginScreen();
             }
         });
 
-        // Load user data
+        // Load user data and knowledge base
         async function loadUserData() {
             try {
                 const userRef = database.ref(`users/${currentUser.uid}`);
                 const snapshot = await userRef.once('value');
                 const userData = snapshot.val() || {};
                 
-                dailyUsage = userData.dailyUsage || 0;
-                isPlus = userData.isPlus || false;
                 knowledgeBase = userData.knowledgeBase || {};
+                conversationHistory = userData.conversations || [];
                 
-                updateUsageDisplay();
-                updateModelAccess();
+                // Load global knowledge base
+                const globalKnowledgeRef = database.ref('globalKnowledge');
+                const globalSnapshot = await globalKnowledgeRef.once('value');
+                const globalKnowledge = globalSnapshot.val() || {};
                 
-                // Reset daily usage if it's a new day
-                const today = new Date().toDateString();
-                if (userData.lastUsageDate !== today) {
-                    dailyUsage = 0;
-                    await userRef.update({
-                        dailyUsage: 0,
-                        lastUsageDate: today
-                    });
-                }
+                // Merge global and personal knowledge
+                knowledgeBase = { ...globalKnowledge, ...knowledgeBase };
+                
             } catch (error) {
                 console.error('Error loading user data:', error);
             }
         }
 
-        // Add loading states
-        function setButtonLoading(button, loading) {
-            if (loading) {
-                button.disabled = true;
-                button.innerHTML = '<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>';
-            } else {
-                button.disabled = false;
-            }
-        }
-
-        function updateUsageDisplay() {
-            usageCount.textContent = dailyUsage;
-            if (isPlus) {
-                document.getElementById('usageCounter').innerHTML = '<span class="text-yellow-500">Plus ∞</span>';
-            }
-        }
-
-        function updateModelAccess() {
-            const orin5oOption = modelSelect.querySelector('option[value="orin5o"]');
-            if (isPlus) {
-                orin5oOption.disabled = false;
-                orin5oOption.textContent = 'Orin-5O';
+        function updateUserInfo() {
+            if (currentUser) {
+                userInfo.textContent = currentUser.displayName || currentUser.email;
             }
         }
 
@@ -410,99 +315,76 @@
             chatInterface.classList.remove('hidden');
         }
 
-        // Error Handling
-        function showError(message) {
+        // Error Handling with friendly messages
+        function showError(errorCode) {
             const friendlyMessages = {
-                'auth/invalid-login-credentials': 'Invalid password. Please try again.',
-                'auth/email-already-in-use': 'An account already exists with this email.',
-                'auth/weak-password': 'Password should be at least 6 characters.',
+                'auth/invalid-login-credentials': 'Invalid password. Please check your credentials and try again.',
+                'auth/email-already-in-use': 'An account already exists with this email address.',
+                'auth/weak-password': 'Password should be at least 6 characters long.',
                 'auth/invalid-email': 'Please enter a valid email address.',
-                'auth/user-not-found': 'No account found with this email.',
-                'auth/wrong-password': 'Invalid password. Please try again.'
+                'auth/user-not-found': 'No account found with this email address.',
+                'auth/wrong-password': 'Invalid password. Please try again.',
+                'auth/too-many-requests': 'Too many failed attempts. Please try again later.'
             };
             
-            errorMessage.textContent = friendlyMessages[message] || message;
+            const message = friendlyMessages[errorCode] || 'An error occurred. Please try again.';
+            errorMessage.textContent = message;
             errorMessage.classList.remove('hidden');
             setTimeout(() => errorMessage.classList.add('hidden'), 5000);
         }
 
-        // Email/Password Authentication
+        // Authentication Functions
         emailForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
             if (!email || !password) {
-                showError('Please fill in all fields.');
+                showError('auth/invalid-email');
                 return;
             }
 
-            const loginBtn = document.getElementById('loginBtn');
-            setButtonLoading(loginBtn, true);
-
             try {
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                console.log('Login successful:', userCredential.user);
+                await auth.signInWithEmailAndPassword(email, password);
             } catch (error) {
-                console.error('Login error:', error);
                 showError(error.code);
-            } finally {
-                loginBtn.innerHTML = 'Login';
-                setButtonLoading(loginBtn, false);
             }
         });
 
-        document.getElementById('signupBtn').addEventListener('click', async (e) => {
-            e.preventDefault();
+        document.getElementById('signupBtn').addEventListener('click', async () => {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
             if (!email || !password) {
-                showError('Please fill in all fields.');
+                showError('auth/invalid-email');
                 return;
             }
 
             if (password.length < 6) {
-                showError('Password must be at least 6 characters long.');
+                showError('auth/weak-password');
                 return;
             }
 
-            const signupBtn = document.getElementById('signupBtn');
-            setButtonLoading(signupBtn, true);
-
             try {
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                console.log('Signup successful:', userCredential.user);
                 
                 // Initialize user data
                 await database.ref(`users/${userCredential.user.uid}`).set({
                     email: email,
                     createdAt: firebase.database.ServerValue.TIMESTAMP,
-                    dailyUsage: 0,
-                    isPlus: false,
-                    lastUsageDate: new Date().toDateString()
+                    knowledgeBase: {},
+                    conversations: []
                 });
             } catch (error) {
-                console.error('Signup error:', error);
                 showError(error.code);
-            } finally {
-                signupBtn.innerHTML = 'Sign Up';
-                setButtonLoading(signupBtn, false);
             }
         });
 
         // Google Authentication
         googleLogin.addEventListener('click', async () => {
-            const originalText = googleLogin.innerHTML;
-            setButtonLoading(googleLogin, true);
-            
             const provider = new firebase.auth.GoogleAuthProvider();
-            provider.addScope('email');
-            provider.addScope('profile');
-            
             try {
                 const result = await auth.signInWithPopup(provider);
-                console.log('Google login successful:', result.user);
                 
                 // Initialize user data if new user
                 const userRef = database.ref(`users/${result.user.uid}`);
@@ -514,21 +396,12 @@
                         displayName: result.user.displayName,
                         photoURL: result.user.photoURL,
                         createdAt: firebase.database.ServerValue.TIMESTAMP,
-                        dailyUsage: 0,
-                        isPlus: false,
-                        lastUsageDate: new Date().toDateString()
+                        knowledgeBase: {},
+                        conversations: []
                     });
                 }
             } catch (error) {
-                console.error('Google login error:', error);
-                if (error.code === 'auth/popup-closed-by-user') {
-                    showError('Login cancelled. Please try again.');
-                } else {
-                    showError(error.message);
-                }
-            } finally {
-                googleLogin.innerHTML = originalText;
-                setButtonLoading(googleLogin, false);
+                showError(error.code);
             }
         });
 
@@ -569,22 +442,20 @@
             if (isUser) {
                 messageDiv.innerHTML = `
                     <div class="flex justify-end">
-                        <div class="bg-blue-600 text-white rounded-2xl px-4 py-3 max-w-2xl">
-                            <p>${content}</p>
+                        <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl px-6 py-4 max-w-3xl shadow-lg">
+                            <p class="text-lg">${content}</p>
                         </div>
                     </div>
                 `;
             } else {
                 const modelClass = model ? getModelStyle(model) : '';
-                let formattedContent = formatMessage(content);
-                
                 messageDiv.innerHTML = `
-                    <div class="bg-gray-100 dark:bg-gray-800 rounded-2xl p-4 max-w-2xl">
-                        <div class="flex items-start gap-3">
-                            <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">O</div>
+                    <div class="bg-gray-100 dark:bg-gray-800 rounded-2xl p-6 max-w-3xl shadow-sm">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg">O</div>
                             <div class="flex-1">
-                                <div class="text-gray-900 dark:text-white ${modelClass}">${formattedContent}</div>
-                                ${model ? `<p class="text-xs text-gray-500 mt-1">${getModelDisplayName(model)}</p>` : ''}
+                                <div class="text-gray-900 dark:text-white text-lg ${modelClass}">${content}</div>
+                                ${model ? `<p class="text-xs text-gray-500 mt-2">${getModelDisplayName(model)} Model</p>` : ''}
                             </div>
                         </div>
                     </div>
@@ -595,8 +466,250 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // Format message with code blocks and sources
-        function formatMessage(content) {
-            // Handle code blocks
-            content = content.replace(/
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'966540703026ff71',t:'MTc1MzcxNDg4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+        function addSystemMessage(content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message-animation text-center';
+            messageDiv.innerHTML = `
+                <div class="text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-full px-4 py-2 inline-block">
+                    ${content}
+                </div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typingIndicator';
+            typingDiv.className = 'message-animation';
+            typingDiv.innerHTML = `
+                <div class="bg-gray-100 dark:bg-gray-800 rounded-2xl p-6 max-w-3xl shadow-sm">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg">O</div>
+                        <div class="flex items-center gap-2">
+                            <div class="typing-indicator"></div>
+                            <div class="typing-indicator"></div>
+                            <div class="typing-indicator"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // AI Response Generation with different personalities
+        async function generateAIResponse(message, model) {
+            const lowerMessage = message.toLowerCase();
+            
+            // Check knowledge base first
+            for (const [key, response] of Object.entries(knowledgeBase)) {
+                if (lowerMessage.includes(key.toLowerCase())) {
+                    return response;
+                }
+            }
+
+            // Model-specific responses with different personalities
+            const responses = {
+                orin4o: {
+                    greetings: ["Hi there! I'm OrinAI, created by OrionTec. How can I assist you today? 😊", "Hello! Great to meet you! I'm here to help with anything you need. 🚀", "Hey! I'm OrinAI, your AI assistant. What would you like to know? ✨"],
+                    casual: ["That's awesome! Tell me more about it! 😄", "Interesting! I'd love to hear your thoughts on that. 🤔", "Cool! What else is on your mind? 🌟"],
+                    knowledge: "I'm OrinAI, an advanced AI model created by OrionTec. I'm designed to be helpful, harmless, and honest. I can assist with various tasks including answering questions, creative writing, analysis, and much more!"
+                },
+                o4mini: {
+                    greetings: ["Hello! I'm the O4-Mini model. Quick and efficient! ⚡", "Hi! O4-Mini here, ready to help! 🔥", "Hey there! O4-Mini at your service! 💫"],
+                    casual: ["Nice! 👍", "Got it! What's next? ⚡", "Awesome! 🎯"],
+                    knowledge: "I'm O4-Mini, a streamlined version of OrinAI optimized for speed and efficiency while maintaining high-quality responses."
+                },
+                orin42mini: {
+                    greetings: ["Greetings! I'm Orin-4.2-Mini, the balanced model! ⚖️", "Hello! Orin-4.2-Mini here, combining power with efficiency! 🎪", "Hi! I'm the 4.2-Mini version, perfect for most tasks! 🎨"],
+                    casual: ["That sounds great! 🌈", "Wonderful! Keep going! 🎭", "Excellent! What else? 🎪"],
+                    knowledge: "I'm Orin-4.2-Mini, a balanced AI model that offers a perfect blend of capability and efficiency, suitable for a wide range of applications."
+                }
+            };
+
+            const modelResponses = responses[model] || responses.orin4o;
+
+            // Check for greetings
+            if (lowerMessage.includes('hi') || lowerMessage.includes('hello') || lowerMessage.includes('hey')) {
+                return modelResponses.greetings[Math.floor(Math.random() * modelResponses.greetings.length)];
+            }
+
+            // Check for personal questions
+            if (lowerMessage.includes('who are you') || lowerMessage.includes('what are you')) {
+                return modelResponses.knowledge;
+            }
+
+            // Check for name introductions
+            if (lowerMessage.includes('i am') || lowerMessage.includes("i'm")) {
+                const name = message.match(/i(?:'m| am) (\w+)/i);
+                if (name) {
+                    return `Nice to meet you, ${name[1]}! I'm OrinAI. How can I help you today? 😊`;
+                }
+            }
+
+            // Emoji responses
+            if (message.includes('😊') || message.includes('😄') || message.includes('🙂')) {
+                return `${modelResponses.casual[Math.floor(Math.random() * modelResponses.casual.length)]} 😊`;
+            }
+
+            // Natural conversation responses
+            const conversationResponses = [
+                "That's really interesting! I'd love to learn more about your perspective on this.",
+                "I understand what you're saying. From my experience helping users, I think there are several ways to approach this.",
+                "Great question! Let me think about this carefully and provide you with a helpful response.",
+                "I appreciate you sharing that with me. Based on what I know, here's what I think...",
+                "That's a thoughtful point! I'm constantly learning from conversations like ours to better understand these topics."
+            ];
+
+            return conversationResponses[Math.floor(Math.random() * conversationResponses.length)];
+        }
+
+        // Send Message
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Add user message
+            addMessage(message, true);
+            messageInput.value = '';
+            sendBtn.disabled = true;
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Simulate AI thinking time
+            await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+
+            // Generate AI response
+            const response = await generateAIResponse(message, currentModel);
+            
+            // Hide typing indicator and show response
+            hideTypingIndicator();
+            addMessage(response, false, currentModel);
+
+            // Save conversation and learn from it
+            await saveConversation(message, response);
+            await learnFromConversation(message, response);
+
+            sendBtn.disabled = false;
+        }
+
+        // Save conversation to Firebase
+        async function saveConversation(userMessage, aiResponse) {
+            if (currentUser) {
+                const conversationRef = database.ref(`users/${currentUser.uid}/conversations`).push();
+                await conversationRef.set({
+                    userMessage: userMessage,
+                    aiResponse: aiResponse,
+                    model: currentModel,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+            }
+        }
+
+        // Learn from conversation and update knowledge base
+        async function learnFromConversation(userMessage, aiResponse) {
+            if (currentUser) {
+                // Extract key phrases and save to knowledge base
+                const keywords = extractKeywords(userMessage);
+                
+                for (const keyword of keywords) {
+                    if (keyword.length > 3) {
+                        knowledgeBase[keyword] = aiResponse;
+                        
+                        // Save to personal knowledge base
+                        await database.ref(`users/${currentUser.uid}/knowledgeBase/${keyword}`).set(aiResponse);
+                        
+                        // Save to global knowledge base (for all users to benefit)
+                        await database.ref(`globalKnowledge/${keyword}`).set(aiResponse);
+                    }
+                }
+            }
+        }
+
+        // Extract keywords from message
+        function extractKeywords(message) {
+            const stopWords = ['the', 'is', 'at', 'which', 'on', 'and', 'a', 'to', 'are', 'as', 'was', 'with', 'for', 'his', 'her', 'he', 'she', 'it', 'you', 'me', 'i', 'we', 'they'];
+            return message.toLowerCase()
+                .replace(/[^\w\s]/g, '')
+                .split(' ')
+                .filter(word => word.length > 3 && !stopWords.includes(word));
+        }
+
+        // Sidebar functionality
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.add('open');
+            loadChatHistory();
+        });
+
+        closeSidebar.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+        });
+
+        // Load chat history
+        async function loadChatHistory() {
+            if (!currentUser) return;
+            
+            const conversationsRef = database.ref(`users/${currentUser.uid}/conversations`).orderByChild('timestamp').limitToLast(10);
+            const snapshot = await conversationsRef.once('value');
+            const conversations = snapshot.val() || {};
+            
+            const historyContainer = document.getElementById('chatHistory');
+            historyContainer.innerHTML = '';
+            
+            Object.entries(conversations).reverse().forEach(([key, conversation]) => {
+                const chatItem = document.createElement('div');
+                chatItem.className = 'p-4 bg-gray-800 rounded-xl cursor-pointer hover:bg-gray-700 transition-colors';
+                chatItem.innerHTML = `
+                    <p class="text-sm text-white truncate">${conversation.userMessage}</p>
+                    <p class="text-xs text-gray-400 mt-1">${new Date(conversation.timestamp).toLocaleDateString()}</p>
+                `;
+                historyContainer.appendChild(chatItem);
+            });
+        }
+
+        // Event Listeners
+        sendBtn.addEventListener('click', sendMessage);
+
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        messageInput.addEventListener('input', () => {
+            messageInput.style.height = 'auto';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 128) + 'px';
+        });
+
+        // Close sidebar when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+                sidebar.classList.remove('open');
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Auto-resize textarea
+            messageInput.style.height = 'auto';
+            
+            // Prevent zoom on mobile
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'966547df54e791d9',t:'MTc1MzcxNTE5MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
