@@ -505,20 +505,6 @@
             font-size: 14px;
         }
         
-        .source-link {
-            display: block;
-            margin-top: 5px;
-            font-size: 12px;
-            color: #10a37f;
-            text-decoration: none;
-            border-top: 1px solid #10a37f;
-            padding-top: 5px;
-        }
-        
-        .source-link:hover {
-            text-decoration: underline;
-        }
-        
         .usage-limit-container {
             background-color: rgba(0, 0, 0, 0.8);
             position: fixed;
@@ -687,6 +673,42 @@
             margin-top: 10px;
             text-align: center;
         }
+        
+        .plus-badge {
+            background: linear-gradient(135deg, #FF5733, #8A33FF);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .plus-features-button {
+            background: linear-gradient(135deg, #FF5733, #8A33FF);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .plus-features-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 87, 51, 0.4);
+        }
+        
+        .plus-icon {
+            margin-right: 5px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -771,6 +793,10 @@
                     <div id="usage-count" class="text-xs text-gray-400 text-center mb-2">
                         Messages today: 0/90
                     </div>
+                    <button id="plus-features-button" class="plus-features-button">
+                        <span class="plus-icon">+</span>
+                        Get OrinAI Plus
+                    </button>
                     <button id="logout-button" class="logout-button">Log out</button>
                 </div>
             </div>
@@ -853,11 +879,15 @@
                     </div>
                     <div class="premium-feature">
                         <span class="feature-icon">✓</span>
-                        <span>Enhanced search capabilities</span>
+                        <span>Enhanced search capabilities with more results</span>
                     </div>
                     <div class="premium-feature">
                         <span class="feature-icon">✓</span>
-                        <span>Faster response times</span>
+                        <span>Faster response times and better accuracy</span>
+                    </div>
+                    <div class="premium-feature">
+                        <span class="feature-icon">✓</span>
+                        <span>Advanced personalization and learning</span>
                     </div>
                 </div>
                 
@@ -919,6 +949,7 @@
         const usageLimitModal = document.getElementById('usage-limit-modal');
         const resetTime = document.getElementById('reset-time');
         const getPlusButton = document.getElementById('get-plus-button');
+        const plusFeaturesButton = document.getElementById('plus-features-button');
         const premiumPlanModal = document.getElementById('premium-plan-modal');
         const buyButton = document.getElementById('buy-button');
         const closePremiumModal = document.getElementById('close-premium-modal');
@@ -933,6 +964,7 @@
         let searchResults = {};
         let aiResponses = {};
         let restrictedCommands = {};
+        let trainingData = {};
         
         // Load AI responses from Firebase
         function loadAIResponses() {
@@ -958,6 +990,21 @@
                 } else {
                     // Initialize with default restricted commands
                     initializeDefaultRestrictedCommands();
+                }
+            });
+        }
+        
+        // Load training data from Firebase
+        function loadTrainingData() {
+            const trainingRef = database.ref('training_data');
+            trainingRef.once('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    trainingData = data;
+                } else {
+                    // Initialize with empty training data
+                    trainingData = {};
+                    database.ref('training_data').set(trainingData);
                 }
             });
         }
@@ -1004,9 +1051,26 @@
             restrictedCommands = defaultCommands;
         }
         
+        // Save query to training data
+        function saveQueryToTraining(query, response, model) {
+            if (!query || !response) return;
+            
+            const queryId = Date.now().toString();
+            const trainingRef = database.ref('training_data/' + queryId);
+            
+            trainingRef.set({
+                query: query,
+                response: response,
+                model: model,
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                userId: currentUser ? currentUser.uid : 'anonymous'
+            });
+        }
+        
         // Load initial data
         loadAIResponses();
         loadRestrictedCommands();
+        loadTrainingData();
         
         // Toggle between login and signup forms
         switchToSignup.addEventListener('click', () => {
@@ -1198,13 +1262,20 @@
                     
                     // Update model selector
                     updateModelSelector();
+                    
+                    // Update Plus button
+                    updatePlusButton();
                 }
             });
         }
         
         // Update usage count display
         function updateUsageCount() {
-            usageCount.textContent = `Messages today: ${messageCount}/90`;
+            if (isPlusUser) {
+                usageCount.innerHTML = `Messages today: ${messageCount} <span class="plus-badge">PLUS</span>`;
+            } else {
+                usageCount.textContent = `Messages today: ${messageCount}/90`;
+            }
         }
         
         // Update model selector based on plus status
@@ -1218,6 +1289,29 @@
                 orin5oOption.disabled = true;
                 orin5oOption.textContent = "Orin5o (Plus Only)";
             }
+        }
+        
+        // Update Plus button
+        function updatePlusButton() {
+            if (isPlusUser) {
+                plusFeaturesButton.textContent = "OrinAI Plus Active";
+                plusFeaturesButton.style.opacity = "0.7";
+                plusFeaturesButton.style.cursor = "default";
+                plusFeaturesButton.onclick = null;
+            } else {
+                plusFeaturesButton.innerHTML = '<span class="plus-icon">+</span> Get OrinAI Plus';
+                plusFeaturesButton.style.opacity = "1";
+                plusFeaturesButton.style.cursor = "pointer";
+                plusFeaturesButton.onclick = showPremiumPlanModal;
+            }
+        }
+        
+        // Show premium plan modal
+        function showPremiumPlanModal() {
+            if (!currentUser) return;
+            
+            userEmailDisplay.textContent = currentUser.email;
+            premiumPlanModal.classList.remove('hidden');
         }
         
         // Show authentication error
@@ -1256,6 +1350,9 @@
         
         // New chat button
         newChatBtn.addEventListener('click', createNewChat);
+        
+        // Plus features button
+        plusFeaturesButton.addEventListener('click', showPremiumPlanModal);
         
         // Create new chat
         function createNewChat() {
@@ -1372,7 +1469,7 @@
                 // Add messages to chat
                 messages.forEach((message) => {
                     if (message.sender === 'user' || message.sender === 'ai') {
-                        addMessageToChat(message.sender, message.content, message.model, message.source);
+                        addMessageToChat(message.sender, message.content, message.model);
                     }
                 });
                 
@@ -1483,6 +1580,10 @@
                         timestamp: firebase.database.ServerValue.TIMESTAMP,
                         model: selectedModel
                     });
+                    
+                    // Save to training data
+                    saveQueryToTraining(message, aiResponse, selectedModel);
+                    
                 }, getRandomResponseTime(selectedModel));
             }
         }
@@ -1538,7 +1639,9 @@
             document.addEventListener('gsc.searchresults', (event) => {
                 if (event.detail && event.detail.results && event.detail.results.length > 0) {
                     // Process search results
-                    const results = event.detail.results.slice(0, 8); // Get up to 8 results
+                    // Get more results for Plus users
+                    const maxResults = isPlusUser ? 8 : 5;
+                    const results = event.detail.results.slice(0, maxResults);
                     
                     // Format search results
                     let formattedResults = `Here's what I found about "${query}":\n\n`;
@@ -1554,17 +1657,11 @@
                         });
                     });
                     
-                    // Add source link
-                    formattedResults += `Source: Google Search`;
-                    
                     // Remove typing indicator
                     removeTypingIndicator();
                     
                     // Add AI response to chat
-                    addMessageToChat('ai', formattedResults, model, {
-                        text: 'Google Search',
-                        url: `https://www.google.com/search?q=${encodeURIComponent(query)}`
-                    });
+                    addMessageToChat('ai', formattedResults, model);
                     
                     // Save AI response to Firebase
                     const messagesRef = database.ref('messages/' + currentUser.uid + '/' + currentChatId);
@@ -1573,12 +1670,11 @@
                         content: formattedResults,
                         sender: 'ai',
                         timestamp: firebase.database.ServerValue.TIMESTAMP,
-                        model: model,
-                        source: {
-                            text: 'Google Search',
-                            url: `https://www.google.com/search?q=${encodeURIComponent(query)}`
-                        }
+                        model: model
                     });
+                    
+                    // Save to training data
+                    saveQueryToTraining(`search ${query}`, formattedResults, model);
                     
                     // Clean up
                     document.body.removeChild(tempInput);
@@ -1601,6 +1697,9 @@
                         timestamp: firebase.database.ServerValue.TIMESTAMP,
                         model: model
                     });
+                    
+                    // Save to training data
+                    saveQueryToTraining(`search ${query}`, noResultsResponse, model);
                     
                     // Clean up
                     document.body.removeChild(tempInput);
@@ -1707,9 +1806,6 @@
             // Open UPI link
             window.location.href = upiLink;
             
-            // For demo purposes, we'll simulate a payment verification process
-            // In a real app, you would have a server-side webhook to verify the payment
-            
             // Create a payment record in Firebase
             const paymentRef = database.ref('payments').push();
             paymentRef.set({
@@ -1740,6 +1836,12 @@
                 // Update model selector
                 updateModelSelector();
                 
+                // Update Plus button
+                updatePlusButton();
+                
+                // Update usage count display
+                updateUsageCount();
+                
                 // Hide premium plan modal
                 premiumPlanModal.classList.add('hidden');
                 paymentStatus.classList.add('hidden');
@@ -1758,7 +1860,7 @@
         });
         
         // Add message to chat
-        function addMessageToChat(sender, content, model = null, source = null) {
+        function addMessageToChat(sender, content, model = null) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}-message`;
             
@@ -1773,17 +1875,12 @@
                 avatarContent = `<div class="avatar ${avatarClass}">AI</div>`;
             }
             
-            let sourceContent = '';
-            if (source) {
-                sourceContent = `<a href="${source.url}" target="_blank" class="source-link">${source.text}</a>`;
-            }
-            
             // Format message content - remove any links unless explicitly requested
             const formattedContent = formatMessage(content);
             
             messageDiv.innerHTML = `
                 ${avatarContent}
-                <div class="message-content">${formattedContent}${sourceContent}</div>
+                <div class="message-content">${formattedContent}</div>
             `;
             
             chatMessages.appendChild(messageDiv);
@@ -1840,23 +1937,35 @@
         
         // Get random response time based on model
         function getRandomResponseTime(model) {
+            // Plus users get faster responses
+            const plusMultiplier = isPlusUser ? 0.7 : 1;
+            
             switch (model) {
                 case 'orin5o':
-                    return Math.floor(Math.random() * 300) + 500; // 0.5-0.8 seconds (fastest)
+                    return Math.floor(Math.random() * 300 * plusMultiplier) + 500 * plusMultiplier; // 0.5-0.8 seconds (fastest)
                 case 'orin4o':
-                    return Math.floor(Math.random() * 1000) + 1000; // 1-2 seconds
+                    return Math.floor(Math.random() * 1000 * plusMultiplier) + 1000 * plusMultiplier; // 1-2 seconds
                 case 'o4mini':
-                    return Math.floor(Math.random() * 500) + 800; // 0.8-1.3 seconds
+                    return Math.floor(Math.random() * 500 * plusMultiplier) + 800 * plusMultiplier; // 0.8-1.3 seconds
                 case 'orin-4-2-mini':
-                    return Math.floor(Math.random() * 800) + 1200; // 1.2-2 seconds
+                    return Math.floor(Math.random() * 800 * plusMultiplier) + 1200 * plusMultiplier; // 1.2-2 seconds
                 default:
-                    return Math.floor(Math.random() * 1000) + 1000; // 1-2 seconds
+                    return Math.floor(Math.random() * 1000 * plusMultiplier) + 1000 * plusMultiplier; // 1-2 seconds
             }
         }
         
         // Generate AI response based on message and model
         function generateAIResponse(message, model) {
-            // First check if we have a response in Firebase
+            // First check if we have a response in training data
+            // This simulates the AI learning from previous interactions
+            for (const queryId in trainingData) {
+                const training = trainingData[queryId];
+                if (training.query.toLowerCase() === message.toLowerCase() && training.model === model) {
+                    return training.response;
+                }
+            }
+            
+            // Then check if we have a response in Firebase
             if (aiResponses) {
                 // Convert message to lowercase for easier matching
                 const lowerMessage = message.toLowerCase();
@@ -1894,6 +2003,8 @@
             } else if (lowerMessage.includes('created') || lowerMessage.includes('made') || 
                       (lowerMessage.includes('who') && lowerMessage.includes('made'))) {
                 return getCreatorResponse(model);
+            } else if (lowerMessage.includes('plus') && (lowerMessage.includes('what') || lowerMessage.includes('feature'))) {
+                return getPlusFeatures(model);
             } else {
                 // Generic response based on model
                 return getGenericResponse(model);
@@ -2046,6 +2157,21 @@
             }
         }
         
+        function getPlusFeatures(model) {
+            switch (model) {
+                case 'orin5o':
+                    return "OrinAI Plus is our premium subscription that unlocks the full potential of our AI technology. As a Plus user, you're already experiencing the benefits, including:\n\n• Access to me, the Orin5o model - our most advanced AI\n• Unlimited messages with no daily limits\n• Priority access during high demand periods\n• Enhanced search capabilities with more comprehensive results\n• Faster response times and improved accuracy\n• Advanced personalization that learns from your interactions\n\nIs there a specific Plus feature you'd like to know more about?";
+                case 'orin4o':
+                    return "OrinAI Plus is our premium subscription that offers several great benefits:\n\n• Unlimited messages with no daily limits\n• Access to Orin5o, our most advanced model\n• Priority access during high demand\n• Enhanced search capabilities\n• Faster response times\n• Advanced personalization\n\nYou can upgrade by clicking the 'Get OrinAI Plus' button in the sidebar. It's just ₹120 per month!";
+                case 'o4mini':
+                    return "OrinAI Plus gives you lots of cool features! For ₹120/month, you get:\n\n• No message limits\n• Our best AI model (Orin5o)\n• Faster responses\n• Better search results\n• Priority access\n\nJust click 'Get OrinAI Plus' in the sidebar to upgrade!";
+                case 'orin-4-2-mini':
+                    return "OrinAI Plus subscription benefits:\n\n1. Unlimited message allocation\n2. Access to Orin5o model (superior capabilities)\n3. Priority server allocation\n4. Enhanced search functionality (3-8 results vs. standard 3-5)\n5. Reduced response latency\n6. Advanced learning algorithms\n\nCost: ₹120 per month. Upgrade available via sidebar interface.";
+                default:
+                    return "OrinAI Plus gives you unlimited messages, access to our best AI model, faster responses, and better search results for just ₹120 per month. Click 'Get OrinAI Plus' in the sidebar to upgrade!";
+            }
+        }
+        
         function getGenericResponse(model) {
             const genericResponses = {
                 orin5o: [
@@ -2079,5 +2205,5 @@
             return responses[Math.floor(Math.random() * responses.length)];
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96657f84538e80b8',t:'MTc1MzcxNzQ2OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96658e01c78e54fb',t:'MTc1MzcxODA2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
