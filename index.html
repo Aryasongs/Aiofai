@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrinAI Chat</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 16px;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #6b7280;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        
+        .orin4o-theme {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .o4mini-theme {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .orin42mini-theme {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .message-animation {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .model-selector {
+            transition: all 0.3s ease;
+        }
+        
+        .model-selector:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .chat-container {
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+        
+        .chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .chat-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        
+        .chat-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        
+        .login-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .google-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .google-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">OrinAI</h1>
+                <p class="text-gray-600">Sign in to continue your AI conversation</p>
+            </div>
+            
+            <div id="authTabs" class="flex mb-6 bg-gray-100 rounded-lg p-1">
+                <button id="loginTab" class="flex-1 py-2 px-4 rounded-md bg-white text-blue-600 font-medium transition">
+                    Sign In
+                </button>
+                <button id="signupTab" class="flex-1 py-2 px-4 rounded-md text-gray-600 font-medium transition">
+                    Sign Up
+                </button>
+            </div>
+
+            <form id="emailLoginForm" class="space-y-4 mb-6">
+                <div>
+                    <input type="email" id="email" placeholder="Email address" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
+                </div>
+                <div>
+                    <input type="password" id="password" placeholder="Password" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
+                </div>
+                <div id="confirmPasswordDiv" class="hidden">
+                    <input type="password" id="confirmPassword" placeholder="Confirm Password" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
+                </div>
+                <button type="submit" id="authSubmitBtn" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-medium">
+                    Sign In with Email
+                </button>
+            </form>
+            
+            <div class="relative mb-6">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-gray-300"></div>
+                </div>
+                <div class="relative flex justify-center text-sm">
+                    <span class="px-2 bg-white text-gray-500">Or continue with</span>
+                </div>
+            </div>
+            
+            <button id="googleLogin" class="google-btn w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition font-medium flex items-center justify-center gap-3">
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Sign in with Google
+            </button>
+            
+            <p class="text-center text-sm text-gray-600 mt-6">
+                Secure authentication powered by Firebase
+            </p>
+        </div>
+    </div>
+
+    <!-- Main Chat Interface -->
+    <div id="chatInterface" class="hidden">
+        <!-- Header -->
+        <header class="bg-white border-b border-gray-200 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <h1 class="text-2xl font-bold text-gray-800">OrinAI</h1>
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">Online</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="userEmail" class="text-sm text-gray-600"></span>
+                    <button id="logoutBtn" class="text-red-600 hover:text-red-700 text-sm font-medium">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Model Selection -->
+        <div class="bg-white border-b border-gray-200 px-6 py-4">
+            <div class="flex gap-4 overflow-x-auto">
+                <button class="model-selector orin4o-theme px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap" data-model="orin4o">
+                    🧠 Orin4o - Advanced Reasoning
+                </button>
+                <button class="model-selector o4mini-theme px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap" data-model="o4mini">
+                    ⚡ O4Mini - Fast & Efficient
+                </button>
+                <button class="model-selector orin42mini-theme px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap" data-model="orin-4.2-mini">
+                    🚀 Orin-4.2-Mini - Balanced
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-container px-6 py-4" id="chatMessages">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center py-8">
+                    <div class="text-6xl mb-4">🤖</div>
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-2">Welcome to OrinAI</h2>
+                    <p class="text-gray-600">Choose a model above and start your conversation!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Typing Indicator -->
+        <div id="typingIndicator" class="hidden px-6">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex items-start gap-3 mb-4">
+                    <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                        🤖
+                    </div>
+                    <div class="bg-gray-100 rounded-2xl typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="bg-white border-t border-gray-200 px-6 py-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex gap-4">
+                    <div class="flex-1 relative">
+                        <textarea id="messageInput" 
+                                placeholder="Type your message here..." 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-2xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                                rows="1"></textarea>
+                    </div>
+                    <button id="sendBtn" 
+                            class="bg-blue-600 text-white px-6 py-3 rounded-2xl hover:bg-blue-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                        Send
+                    </button>
+                </div>
+                <div class="text-xs text-gray-500 mt-2 text-center">
+                    Current Model: <span id="currentModel" class="font-medium">Select a model</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAl8eI-_8Ew9va0KPV8p4D2hc9WUTGiwuI",
+            authDomain: "chat-d647c.firebaseapp.com",
+            databaseURL: "https://chat-d647c-default-rtdb.firebaseio.com",
+            projectId: "chat-d647c",
+            storageBucket: "chat-d647c.firebasestorage.app",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:7248a0983dcf0d45a87418",
+            measurementId: "G-5RFLRYTLCN"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // Global variables
+        let currentUser = null;
+        let selectedModel = null;
+        let chatHistory = [];
+
+        // Model configurations
+        const modelConfigs = {
+            'orin4o': {
+                name: 'Orin4o',
+                personality: 'Advanced reasoning AI with deep analytical capabilities',
+                emoji: '🧠',
+                responseStyle: 'detailed',
+                knowledge: 'Extensive knowledge base with focus on complex problem solving'
+            },
+            'o4mini': {
+                name: 'O4Mini',
+                personality: 'Fast and efficient AI assistant',
+                emoji: '⚡',
+                responseStyle: 'concise',
+                knowledge: 'Optimized knowledge base for quick responses'
+            },
+            'orin-4.2-mini': {
+                name: 'Orin-4.2-Mini',
+                personality: 'Balanced AI with creative and analytical capabilities',
+                emoji: '🚀',
+                responseStyle: 'balanced',
+                knowledge: 'Comprehensive knowledge base with creative insights'
+            }
+        };
+
+        // Global auth state
+        let isSignupMode = false;
+
+        // Tab switching
+        document.getElementById('loginTab').addEventListener('click', () => {
+            isSignupMode = false;
+            document.getElementById('loginTab').className = 'flex-1 py-2 px-4 rounded-md bg-white text-blue-600 font-medium transition';
+            document.getElementById('signupTab').className = 'flex-1 py-2 px-4 rounded-md text-gray-600 font-medium transition';
+            document.getElementById('confirmPasswordDiv').classList.add('hidden');
+            document.getElementById('authSubmitBtn').textContent = 'Sign In with Email';
+        });
+
+        document.getElementById('signupTab').addEventListener('click', () => {
+            isSignupMode = true;
+            document.getElementById('signupTab').className = 'flex-1 py-2 px-4 rounded-md bg-white text-blue-600 font-medium transition';
+            document.getElementById('loginTab').className = 'flex-1 py-2 px-4 rounded-md text-gray-600 font-medium transition';
+            document.getElementById('confirmPasswordDiv').classList.remove('hidden');
+            document.getElementById('authSubmitBtn').textContent = 'Create Account';
+        });
+
+        // Authentication handlers
+        document.getElementById('emailLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (isSignupMode) {
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (password !== confirmPassword) {
+                    alert('Passwords do not match!');
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    alert('Password must be at least 6 characters long!');
+                    return;
+                }
+                
+                try {
+                    await auth.createUserWithEmailAndPassword(email, password);
+                    alert('Account created successfully! Welcome to OrinAI!');
+                } catch (error) {
+                    alert('Signup failed: ' + error.message);
+                }
+            } else {
+                try {
+                    await auth.signInWithEmailAndPassword(email, password);
+                } catch (error) {
+                    if (error.code === 'auth/user-not-found') {
+                        alert('No account found with this email. Please sign up first!');
+                    } else if (error.code === 'auth/wrong-password') {
+                        alert('Incorrect password. Please try again!');
+                    } else if (error.code === 'auth/invalid-email') {
+                        alert('Please enter a valid email address!');
+                    } else {
+                        alert('Login failed: ' + error.message);
+                    }
+                }
+            }
+        });
+
+        document.getElementById('googleLogin').addEventListener('click', async () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                await auth.signInWithPopup(provider);
+            } catch (error) {
+                alert('Google login failed: ' + error.message);
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            auth.signOut();
+        });
+
+        // Auth state observer
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('chatInterface').classList.remove('hidden');
+                document.getElementById('userEmail').textContent = user.email;
+                loadChatHistory();
+            } else {
+                currentUser = null;
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('chatInterface').classList.add('hidden');
+            }
+        });
+
+        // Model selection
+        document.querySelectorAll('.model-selector').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active state from all buttons
+                document.querySelectorAll('.model-selector').forEach(b => {
+                    b.style.opacity = '0.7';
+                    b.style.transform = 'scale(0.95)';
+                });
+                
+                // Set active state
+                btn.style.opacity = '1';
+                btn.style.transform = 'scale(1)';
+                
+                selectedModel = btn.dataset.model;
+                document.getElementById('currentModel').textContent = modelConfigs[selectedModel].name;
+                
+                // Add model introduction message
+                addMessage('ai', `Hello! I'm ${modelConfigs[selectedModel].name} ${modelConfigs[selectedModel].emoji}. ${modelConfigs[selectedModel].knowledge}. How can I help you today?`, selectedModel);
+            });
+        });
+
+        // Message handling
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Auto-resize textarea
+        document.getElementById('messageInput').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+
+        async function sendMessage() {
+            if (!selectedModel) {
+                alert('Please select an AI model first!');
+                return;
+            }
+
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+
+            // Add user message
+            addMessage('user', message);
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Simulate AI response
+            setTimeout(() => {
+                hideTypingIndicator();
+                const aiResponse = generateAIResponse(message, selectedModel);
+                addMessage('ai', aiResponse, selectedModel);
+                saveChatHistory();
+            }, 1500 + Math.random() * 1000);
+        }
+
+        function addMessage(sender, content, model = null) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message-animation mb-6';
+
+            const isUser = sender === 'user';
+            const modelConfig = model ? modelConfigs[model] : null;
+
+            messageDiv.innerHTML = `
+                <div class="max-w-4xl mx-auto">
+                    <div class="flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''}">
+                        <div class="w-8 h-8 ${isUser ? 'bg-blue-600' : getModelTheme(model)} rounded-full flex items-center justify-center text-white font-medium">
+                            ${isUser ? '👤' : (modelConfig ? modelConfig.emoji : '🤖')}
+                        </div>
+                        <div class="flex-1 ${isUser ? 'text-right' : ''}">
+                            <div class="text-xs text-gray-500 mb-1 ${isUser ? 'text-right' : ''}">
+                                ${isUser ? 'You' : (modelConfig ? modelConfig.name : 'AI')}
+                                ${model ? ` • ${new Date().toLocaleTimeString()}` : ''}
+                            </div>
+                            <div class="bg-${isUser ? 'blue-600 text-white' : 'gray-100 text-gray-800'} rounded-2xl px-4 py-3 inline-block max-w-3xl">
+                                ${formatMessage(content)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Add to chat history
+            chatHistory.push({
+                sender,
+                content,
+                model,
+                timestamp: Date.now()
+            });
+        }
+
+        function formatMessage(content) {
+            // Convert emojis and format text
+            return content
+                .replace(/:\)/g, '😊')
+                .replace(/:\(/g, '😢')
+                .replace(/:D/g, '😃')
+                .replace(/:\|/g, '😐')
+                .replace(/<3/g, '❤️')
+                .replace(/\n/g, '<br>');
+        }
+
+        function getModelTheme(model) {
+            const themes = {
+                'orin4o': 'bg-gradient-to-r from-purple-600 to-blue-600',
+                'o4mini': 'bg-gradient-to-r from-pink-500 to-red-500',
+                'orin-4.2-mini': 'bg-gradient-to-r from-blue-500 to-cyan-500'
+            };
+            return themes[model] || 'bg-gray-600';
+        }
+
+        function generateAIResponse(userMessage, model) {
+            const config = modelConfigs[model];
+            const responses = {
+                'orin4o': [
+                    `Let me analyze this thoroughly... ${config.emoji} Based on my advanced reasoning capabilities, I believe the best approach would be to consider multiple perspectives on this matter.`,
+                    `This is a fascinating question that requires deep analytical thinking. ${config.emoji} From my extensive knowledge base, I can provide you with a comprehensive analysis.`,
+                    `Excellent question! ${config.emoji} My advanced reasoning suggests we should break this down into several key components for better understanding.`
+                ],
+                'o4mini': [
+                    `Quick answer: ${config.emoji} Here's what you need to know in a nutshell!`,
+                    `Got it! ${config.emoji} Let me give you a fast and efficient response.`,
+                    `Perfect! ${config.emoji} Here's the most important information you need.`
+                ],
+                'orin-4.2-mini': [
+                    `Great question! ${config.emoji} Let me provide you with a balanced perspective that combines analytical thinking with creative insights.`,
+                    `Interesting! ${config.emoji} My balanced approach suggests we look at this from both practical and innovative angles.`,
+                    `I love this question! ${config.emoji} Here's a comprehensive yet creative take on your inquiry.`
+                ]
+            };
+
+            // Simple response generation based on user input
+            let response = responses[model][Math.floor(Math.random() * responses[model].length)];
+            
+            // Add emoji reactions if user used emojis
+            if (userMessage.includes('😊') || userMessage.includes(':)')) {
+                response += ' I can see you\'re happy! 😊';
+            }
+            if (userMessage.includes('❤️') || userMessage.includes('<3')) {
+                response += ' Sending positive vibes your way! ❤️';
+            }
+
+            return response + ` This response is powered by ${config.name} with ${config.knowledge.toLowerCase()}.`;
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').classList.remove('hidden');
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').classList.add('hidden');
+        }
+
+        function saveChatHistory() {
+            if (currentUser) {
+                database.ref(`chats/${currentUser.uid}`).set(chatHistory);
+            }
+        }
+
+        function loadChatHistory() {
+            if (currentUser) {
+                database.ref(`chats/${currentUser.uid}`).once('value', (snapshot) => {
+                    const history = snapshot.val();
+                    if (history) {
+                        chatHistory = history;
+                        // Restore chat messages
+                        history.forEach(msg => {
+                            if (msg.sender === 'ai') {
+                                addMessage(msg.sender, msg.content, msg.model);
+                            } else {
+                                addMessage(msg.sender, msg.content);
+                            }
+                        });
+                    }
+                });
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set first model as default selection style
+            const firstModel = document.querySelector('.model-selector');
+            if (firstModel) {
+                firstModel.style.opacity = '0.7';
+                firstModel.style.transform = 'scale(0.95)';
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96649dedc4025460',t:'MTc1MzcwODIyOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
