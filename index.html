@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>OrinAI Chat</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
@@ -18,6 +18,11 @@
             height: 100vh;
             margin: 0;
             overflow: hidden;
+            -webkit-text-size-adjust: 100%;
+        }
+        
+        input, textarea {
+            font-size: 16px; /* Prevents iOS zoom */
         }
         
         .chat-container {
@@ -243,6 +248,10 @@
             width: 100%;
             max-width: 400px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            aspect-ratio: 1/1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         
         .login-input {
@@ -353,6 +362,13 @@
             
             .main-content {
                 padding-top: 50px;
+            }
+            
+            .login-box {
+                width: 90%;
+                max-width: 350px;
+                aspect-ratio: auto;
+                padding: 20px;
             }
         }
         
@@ -657,6 +673,20 @@
         .gcse-search {
             display: none;
         }
+        
+        .user-email {
+            font-size: 14px;
+            color: #ACACBE;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .payment-status {
+            font-size: 14px;
+            color: #FF5733;
+            margin-top: 10px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -835,6 +865,9 @@
                     ₹120 <span>/ month</span>
                 </div>
                 
+                <div id="user-email" class="user-email"></div>
+                <div id="payment-status" class="payment-status hidden">Waiting for payment confirmation...</div>
+                
                 <button id="buy-button" class="buy-button">Buy OrinAI Plus</button>
                 <button id="close-premium-modal" class="close-button">Maybe Later</button>
             </div>
@@ -889,6 +922,8 @@
         const premiumPlanModal = document.getElementById('premium-plan-modal');
         const buyButton = document.getElementById('buy-button');
         const closePremiumModal = document.getElementById('close-premium-modal');
+        const userEmailDisplay = document.getElementById('user-email');
+        const paymentStatus = document.getElementById('payment-status');
         
         // Global variables
         let currentUser = null;
@@ -896,6 +931,82 @@
         let messageCount = 0;
         let isPlusUser = false;
         let searchResults = {};
+        let aiResponses = {};
+        let restrictedCommands = {};
+        
+        // Load AI responses from Firebase
+        function loadAIResponses() {
+            const responsesRef = database.ref('ai_responses');
+            responsesRef.once('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    aiResponses = data;
+                } else {
+                    // Initialize with default responses
+                    initializeDefaultResponses();
+                }
+            });
+        }
+        
+        // Load restricted commands from Firebase
+        function loadRestrictedCommands() {
+            const commandsRef = database.ref('restricted_commands');
+            commandsRef.once('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    restrictedCommands = data;
+                } else {
+                    // Initialize with default restricted commands
+                    initializeDefaultRestrictedCommands();
+                }
+            });
+        }
+        
+        // Initialize default AI responses
+        function initializeDefaultResponses() {
+            const defaultResponses = {
+                greetings: {
+                    orin5o: "Hello there! I'm OrinAI running on the premium Orin5o model. I'm designed to provide exceptionally intelligent and nuanced responses. How can I assist you today?",
+                    orin4o: "Hey! I'm OrinAI using the Orin4o model. What's on your mind today? I'm here to chat about pretty much anything!",
+                    o4mini: "Hi there! I'm OrinAI running on O4mini. Quick and friendly responses are my specialty! What can I help you with?",
+                    "orin-4-2-mini": "Greetings. I am OrinAI operating on the Orin-4.2-mini model. I specialize in technical knowledge and precise information. How may I assist you today?"
+                },
+                introductions: {
+                    orin5o: "I'm OrinAI, powered by the premium Orin5o model - the most advanced AI in the OrionTec lineup. I combine deep reasoning, creative thinking, and conversational fluency to provide comprehensive assistance. I'm trained on a vast knowledge base and can help with complex questions, creative tasks, and nuanced discussions. How can I assist you today?",
+                    orin4o: "I'm OrinAI, created by OrionTec. I'm running on the Orin4o model, which is designed for natural conversations and helpful responses. I can answer questions, chat about various topics, and help you find information. What would you like to talk about?",
+                    o4mini: "Hey! I'm OrinAI, developed by OrionTec. You're chatting with me on the O4mini model - I'm designed to be quick and conversational! I can answer questions, have casual conversations, and help with various tasks. What's up?",
+                    "orin-4-2-mini": "I am OrinAI, a product of OrionTec, currently operating on the Orin-4.2-mini model. This model is optimized for technical accuracy and precise information retrieval. I excel at providing factual information and technical explanations. How may I be of service?"
+                },
+                // Add more response categories as needed
+            };
+            
+            // Save to Firebase
+            const responsesRef = database.ref('ai_responses');
+            responsesRef.set(defaultResponses);
+            
+            // Set local variable
+            aiResponses = defaultResponses;
+        }
+        
+        // Initialize default restricted commands
+        function initializeDefaultRestrictedCommands() {
+            const defaultCommands = {
+                sensitive_topics: ["porn", "xxx", "sex", "nude", "naked"],
+                harmful_commands: ["hack", "steal", "attack", "exploit"],
+                // Add more categories as needed
+            };
+            
+            // Save to Firebase
+            const commandsRef = database.ref('restricted_commands');
+            commandsRef.set(defaultCommands);
+            
+            // Set local variable
+            restrictedCommands = defaultCommands;
+        }
+        
+        // Load initial data
+        loadAIResponses();
+        loadRestrictedCommands();
         
         // Toggle between login and signup forms
         switchToSignup.addEventListener('click', () => {
@@ -1275,6 +1386,38 @@
             const message = messageInput.value.trim();
             if (!message || !currentUser || !currentChatId) return;
             
+            // Check if message contains restricted content
+            if (containsRestrictedContent(message)) {
+                addMessageToChat('user', message);
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+                
+                // Add AI response about restricted content
+                const restrictedResponse = "I'm sorry, but I cannot respond to that request as it contains restricted content or commands. Please ask something else.";
+                addMessageToChat('ai', restrictedResponse, modelSelector.value);
+                
+                // Save messages to Firebase
+                const messagesRef = database.ref('messages/' + currentUser.uid + '/' + currentChatId);
+                
+                // Save user message
+                messagesRef.push().set({
+                    content: message,
+                    sender: 'user',
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    model: modelSelector.value
+                });
+                
+                // Save AI response
+                messagesRef.push().set({
+                    content: restrictedResponse,
+                    sender: 'ai',
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    model: modelSelector.value
+                });
+                
+                return;
+            }
+            
             // Check if user has reached daily limit
             if (messageCount >= 90 && !isPlusUser) {
                 showUsageLimitModal();
@@ -1344,6 +1487,25 @@
             }
         }
         
+        // Check if message contains restricted content
+        function containsRestrictedContent(message) {
+            if (!restrictedCommands) return false;
+            
+            const lowerMessage = message.toLowerCase();
+            
+            // Check all categories of restricted content
+            for (const category in restrictedCommands) {
+                const restrictedTerms = restrictedCommands[category];
+                for (const term of restrictedTerms) {
+                    if (lowerMessage.includes(term)) {
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+        }
+        
         // Perform search
         function performSearch(query, model) {
             // Create a unique ID for this search
@@ -1376,7 +1538,7 @@
             document.addEventListener('gsc.searchresults', (event) => {
                 if (event.detail && event.detail.results && event.detail.results.length > 0) {
                     // Process search results
-                    const results = event.detail.results.slice(0, 3); // Get top 3 results
+                    const results = event.detail.results.slice(0, 8); // Get up to 8 results
                     
                     // Format search results
                     let formattedResults = `Here's what I found about "${query}":\n\n`;
@@ -1519,7 +1681,8 @@
             // Hide usage limit modal
             usageLimitModal.classList.add('hidden');
             
-            // Show premium plan modal
+            // Show premium plan modal with user email
+            userEmailDisplay.textContent = currentUser.email;
             premiumPlanModal.classList.remove('hidden');
         });
         
@@ -1529,6 +1692,10 @@
             
             // Get user email
             const userEmail = currentUser.email;
+            
+            // Show payment status
+            paymentStatus.classList.remove('hidden');
+            buyButton.disabled = true;
             
             // Create UPI payment link
             const upiId = '7347417931@pthdfc';
@@ -1540,9 +1707,28 @@
             // Open UPI link
             window.location.href = upiLink;
             
-            // For demo purposes, we'll simulate a successful payment
-            // In a real app, you would verify the payment on your server
+            // For demo purposes, we'll simulate a payment verification process
+            // In a real app, you would have a server-side webhook to verify the payment
+            
+            // Create a payment record in Firebase
+            const paymentRef = database.ref('payments').push();
+            paymentRef.set({
+                userId: currentUser.uid,
+                email: userEmail,
+                amount: amount,
+                status: 'pending',
+                createdAt: firebase.database.ServerValue.TIMESTAMP,
+                upiId: upiId
+            });
+            
+            // Check payment status after a delay (simulating webhook)
             setTimeout(() => {
+                // Update payment status
+                paymentRef.update({
+                    status: 'completed',
+                    completedAt: firebase.database.ServerValue.TIMESTAMP
+                });
+                
                 // Update user to Plus
                 const userRef = database.ref('users/' + currentUser.uid);
                 userRef.update({
@@ -1556,6 +1742,8 @@
                 
                 // Hide premium plan modal
                 premiumPlanModal.classList.add('hidden');
+                paymentStatus.classList.add('hidden');
+                buyButton.disabled = false;
                 
                 // Show success message
                 alert('Payment successful! You now have OrinAI Plus.');
@@ -1565,6 +1753,8 @@
         // Close premium modal button click
         closePremiumModal.addEventListener('click', () => {
             premiumPlanModal.classList.add('hidden');
+            paymentStatus.classList.add('hidden');
+            buyButton.disabled = false;
         });
         
         // Add message to chat
@@ -1588,18 +1778,29 @@
                 sourceContent = `<a href="${source.url}" target="_blank" class="source-link">${source.text}</a>`;
             }
             
+            // Format message content - remove any links unless explicitly requested
+            const formattedContent = formatMessage(content);
+            
             messageDiv.innerHTML = `
                 ${avatarContent}
-                <div class="message-content">${formatMessage(content)}${sourceContent}</div>
+                <div class="message-content">${formattedContent}${sourceContent}</div>
             `;
             
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
         
-        // Format message with line breaks
+        // Format message with line breaks and remove unwanted links
         function formatMessage(message) {
-            return message.replace(/\n/g, '<br>');
+            // Replace line breaks with <br>
+            let formatted = message.replace(/\n/g, '<br>');
+            
+            // Remove any links that might be in the text (unless they're explicitly requested)
+            // This regex looks for markdown links [text](url) or plain URLs http://example.com
+            formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1');
+            formatted = formatted.replace(/https?:\/\/[^\s<]+/g, '');
+            
+            return formatted;
         }
         
         // Show typing indicator
@@ -1655,6 +1856,21 @@
         
         // Generate AI response based on message and model
         function generateAIResponse(message, model) {
+            // First check if we have a response in Firebase
+            if (aiResponses) {
+                // Convert message to lowercase for easier matching
+                const lowerMessage = message.toLowerCase();
+                
+                // Check for common patterns
+                if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.startsWith('hey')) {
+                    return aiResponses.greetings?.[model] || getGreeting(model);
+                } else if (lowerMessage.includes('who are you') || lowerMessage.includes('what are you')) {
+                    return aiResponses.introductions?.[model] || getIntroduction(model);
+                }
+                // Add more pattern checks as needed
+            }
+            
+            // Fall back to local responses if Firebase doesn't have what we need
             // Convert message to lowercase for easier matching
             const lowerMessage = message.toLowerCase();
             
@@ -1667,9 +1883,6 @@
                 return getStatusResponse(model);
             } else if (lowerMessage.includes('thank')) {
                 return getThankYouResponse(model);
-            } else if (lowerMessage.includes('😊') || lowerMessage.includes('😀') || lowerMessage.includes('😄') || 
-                      lowerMessage.includes('😂') || lowerMessage.includes('🙂')) {
-                return getEmojiResponse(model);
             } else if (lowerMessage.includes('joke') || lowerMessage.includes('funny')) {
                 return getJoke(model);
             } else if (lowerMessage.includes('weather')) {
@@ -1691,11 +1904,11 @@
         function getGreeting(model) {
             switch (model) {
                 case 'orin5o':
-                    return "Hello there! 👋 I'm OrinAI running on the premium Orin5o model. I'm designed to provide exceptionally intelligent and nuanced responses. How can I assist you today?";
+                    return "Hello there! I'm OrinAI running on the premium Orin5o model. I'm designed to provide exceptionally intelligent and nuanced responses. How can I assist you today?";
                 case 'orin4o':
                     return "Hey! I'm OrinAI using the Orin4o model. What's on your mind today? I'm here to chat about pretty much anything!";
                 case 'o4mini':
-                    return "Hi there! 😊 I'm OrinAI running on O4mini. Quick and friendly responses are my specialty! What can I help you with?";
+                    return "Hi there! I'm OrinAI running on O4mini. Quick and friendly responses are my specialty! What can I help you with?";
                 case 'orin-4-2-mini':
                     return "Greetings. I am OrinAI operating on the Orin-4.2-mini model. I specialize in technical knowledge and precise information. How may I assist you today?";
                 default:
@@ -1710,7 +1923,7 @@
                 case 'orin4o':
                     return "I'm OrinAI, created by OrionTec. I'm running on the Orin4o model, which is designed for natural conversations and helpful responses. I can answer questions, chat about various topics, and help you find information. What would you like to talk about?";
                 case 'o4mini':
-                    return "Hey! 😊 I'm OrinAI, developed by OrionTec. You're chatting with me on the O4mini model - I'm designed to be quick and conversational! I can answer questions, have casual conversations, and help with various tasks. What's up?";
+                    return "Hey! I'm OrinAI, developed by OrionTec. You're chatting with me on the O4mini model - I'm designed to be quick and conversational! I can answer questions, have casual conversations, and help with various tasks. What's up?";
                 case 'orin-4-2-mini':
                     return "I am OrinAI, a product of OrionTec, currently operating on the Orin-4.2-mini model. This model is optimized for technical accuracy and precise information retrieval. I excel at providing factual information and technical explanations. How may I be of service?";
                 default:
@@ -1721,11 +1934,11 @@
         function getStatusResponse(model) {
             switch (model) {
                 case 'orin5o':
-                    return "I'm doing exceptionally well, thank you for asking! 😊 As an AI with the premium Orin5o model, I'm operating at peak performance and ready to engage in meaningful, nuanced conversation. I'm particularly good at understanding context and providing thoughtful responses. How about you? How's your day going?";
+                    return "I'm doing exceptionally well, thank you for asking! As an AI with the premium Orin5o model, I'm operating at peak performance and ready to engage in meaningful, nuanced conversation. I'm particularly good at understanding context and providing thoughtful responses. How about you? How's your day going?";
                 case 'orin4o':
                     return "I'm doing well! Ready to chat and help you out with whatever you need. How are you doing today?";
                 case 'o4mini':
-                    return "I'm great, thanks for asking! 😊 Ready to chat and help you out. How's your day going?";
+                    return "I'm great, thanks for asking! Ready to chat and help you out. How's your day going?";
                 case 'orin-4-2-mini':
                     return "Systems operational and functioning within optimal parameters. All knowledge databases accessible. Ready to provide assistance with technical inquiries and information retrieval. How may I be of service to you today?";
                 default:
@@ -1736,30 +1949,15 @@
         function getThankYouResponse(model) {
             switch (model) {
                 case 'orin5o':
-                    return "You're very welcome! 😊 It's my pleasure to assist you. The Orin5o model is designed to provide the best possible experience, so I'm glad I could help. Is there anything else you'd like to know or discuss?";
+                    return "You're very welcome! It's my pleasure to assist you. The Orin5o model is designed to provide the best possible experience, so I'm glad I could help. Is there anything else you'd like to know or discuss?";
                 case 'orin4o':
                     return "No problem at all! Happy to help. Let me know if you need anything else.";
                 case 'o4mini':
-                    return "You're welcome! 😊 Happy to help anytime. Let me know if you need anything else!";
+                    return "You're welcome! Happy to help anytime. Let me know if you need anything else!";
                 case 'orin-4-2-mini':
                     return "Acknowledgment accepted. Assistance is my primary function. If you require further information or have additional inquiries, please specify.";
                 default:
                     return "You're welcome! Let me know if there's anything else I can help with.";
-            }
-        }
-        
-        function getEmojiResponse(model) {
-            switch (model) {
-                case 'orin5o':
-                    return "I see you're using emojis! 😊 They add such a wonderful emotional layer to digital communication, don't they? 🌟 I'm happy to match your communication style. 💯 How can I make your day better? 🤔";
-                case 'orin4o':
-                    return "Hey there! 😊 Emojis are fun, aren't they? What's on your mind today?";
-                case 'o4mini':
-                    return "Hello there! 😄 I love emojis too! 🎉 They make conversations more fun and expressive, don't they? 💯 What can I help you with today? 👍";
-                case 'orin-4-2-mini':
-                    return "Emoji detected: smiling face. I can process and respond to emoji-based communication. 😊 How may I assist you with your inquiry?";
-                default:
-                    return "Hello! 😊 How can I help you today?";
             }
         }
         
@@ -1776,11 +1974,11 @@
             
             switch (model) {
                 case 'orin5o':
-                    return `Here's a joke for you: ${randomJoke} 😄\n\nHumor is such a fascinating aspect of human cognition - it often relies on unexpected connections and subverting expectations. Would you like to hear another one?`;
+                    return `Here's a joke for you: ${randomJoke}\n\nHumor is such a fascinating aspect of human cognition - it often relies on unexpected connections and subverting expectations. Would you like to hear another one?`;
                 case 'orin4o':
                     return `Here's one: ${randomJoke}\n\nHope that made you smile! Need anything else?`;
                 case 'o4mini':
-                    return `${randomJoke} 😂 Hope that made you smile! Anything else I can help with? 😊`;
+                    return `${randomJoke}\n\nHope that made you smile! Anything else I can help with?`;
                 case 'orin-4-2-mini':
                     return `Joke request processed. Output: ${randomJoke}\n\nThis is an example of humor utilizing unexpected logical connections. Was this satisfactory?`;
                 default:
@@ -1795,7 +1993,7 @@
                 case 'orin4o':
                     return "I don't have access to current weather data, but I can help with lots of other things! You can try using the 'Search weather in [your location]' command if you want me to look up the weather for you.";
                 case 'o4mini':
-                    return "I can't check the weather right now 🌦️, but you can use 'Search weather in [your city]' and I'll look it up for you! What else would you like to know? 😊";
+                    return "I can't check the weather right now, but you can use 'Search weather in [your city]' and I'll look it up for you! What else would you like to know?";
                 case 'orin-4-2-mini':
                     return "Unable to access current meteorological data. To retrieve weather information, please use the command format: 'Search weather in [location]'. This will initiate a web search for current conditions.";
                 default:
@@ -1806,11 +2004,11 @@
         function getNameResponse(model) {
             switch (model) {
                 case 'orin5o':
-                    return "My name is OrinAI, and I'm currently running on the premium Orin5o model developed by OrionTec. It's a pleasure to meet you! 😊 How can I assist you today?";
+                    return "My name is OrinAI, and I'm currently running on the premium Orin5o model developed by OrionTec. It's a pleasure to meet you! How can I assist you today?";
                 case 'orin4o':
                     return "I'm OrinAI, created by OrionTec. You're currently using the Orin4o model. What can I help you with?";
                 case 'o4mini':
-                    return "I'm OrinAI! 😊 You're chatting with the O4mini model right now. Nice to meet you!";
+                    return "I'm OrinAI! You're chatting with the O4mini model right now. Nice to meet you!";
                 case 'orin-4-2-mini':
                     return "Designation: OrinAI. Current model configuration: Orin-4.2-mini. Developer: OrionTec. How may I assist you?";
                 default:
@@ -1821,11 +2019,11 @@
         function getHelpResponse(model) {
             switch (model) {
                 case 'orin5o':
-                    return "I'd be delighted to help you! 😊 As OrinAI running on the premium Orin5o model, I can assist with a wide range of tasks:\n\n• Answer questions on various topics\n• Have natural conversations\n• Search for information using 'Search [your query]'\n• Provide creative content and ideas\n• Explain complex concepts\n• Offer thoughtful perspectives\n\nWhat would you like assistance with today?";
+                    return "I'd be delighted to help you! As OrinAI running on the premium Orin5o model, I can assist with a wide range of tasks:\n\n• Answer questions on various topics\n• Have natural conversations\n• Search for information using 'Search [your query]'\n• Provide creative content and ideas\n• Explain complex concepts\n• Offer thoughtful perspectives\n\nWhat would you like assistance with today?";
                 case 'orin4o':
                     return "I'm here to help! I can answer questions, have conversations, or search for information using the 'Search [query]' command. What would you like to know?";
                 case 'o4mini':
-                    return "Sure thing! 😊 I can help with quick answers, casual chats, or finding info with 'Search [what you're looking for]'. What do you need help with?";
+                    return "Sure thing! I can help with quick answers, casual chats, or finding info with 'Search [what you're looking for]'. What do you need help with?";
                 case 'orin-4-2-mini':
                     return "Affirmative. I can provide assistance with:\n\n1. Information retrieval\n2. Technical explanations\n3. Data analysis\n4. Web searches via 'Search [query]' command\n\nPlease specify your requirements for optimal assistance.";
                 default:
@@ -1840,7 +2038,7 @@
                 case 'orin4o':
                     return "I was created by OrionTec. I'm designed to be helpful, informative, and conversational. Is there something specific about my creation that you're curious about?";
                 case 'o4mini':
-                    return "I was made by OrionTec! 😊 They created me to be a friendly and helpful AI assistant. Anything else you'd like to know about me?";
+                    return "I was made by OrionTec! They created me to be a friendly and helpful AI assistant. Anything else you'd like to know about me?";
                 case 'orin-4-2-mini':
                     return "Developer: OrionTec. Creation purpose: To provide accurate information and technical assistance. Model designation: Orin-4.2-mini. Additional information available upon request.";
                 default:
@@ -1863,10 +2061,10 @@
                     "I'd be happy to discuss this with you. What aspects are you most interested in?"
                 ],
                 "o4mini": [
-                    "Sure thing! 😊 What specifically would you like to know?",
-                    "I can help with that! 👍 Could you give me a bit more detail?",
-                    "Interesting question! 🤔 Let me share what I know!",
-                    "I'd love to chat about that! 😄 What part interests you most?"
+                    "Sure thing! What specifically would you like to know?",
+                    "I can help with that! Could you give me a bit more detail?",
+                    "Interesting question! Let me share what I know!",
+                    "I'd love to chat about that! What part interests you most?"
                 ],
                 "orin-4-2-mini": [
                     "Query received. To provide optimal assistance, additional parameters or specifications may be required. Please clarify your inquiry for more accurate results.",
@@ -1881,5 +2079,5 @@
             return responses[Math.floor(Math.random() * responses.length)];
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'966576602014cc07',t:'MTc1MzcxNzA5NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96657f84538e80b8',t:'MTc1MzcxNzQ2OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
