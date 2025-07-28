@@ -97,6 +97,20 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
+        
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -117,7 +131,7 @@
                         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                     </svg>
-                    Continue with Google
+                    <span id="googleLoginText">Continue with Google</span>
                 </button>
                 
                 <div class="relative">
@@ -134,8 +148,12 @@
                     <input type="password" id="password" placeholder="Password" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200">
                     
                     <div class="flex gap-3">
-                        <button type="submit" id="loginBtn" class="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg font-medium">Login</button>
-                        <button type="button" id="signupBtn" class="flex-1 bg-gray-600 text-white py-3 rounded-xl hover:bg-gray-700 transition-all duration-200 shadow-md hover:shadow-lg font-medium">Sign Up</button>
+                        <button type="submit" id="loginBtn" class="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg font-medium">
+                            <span id="loginBtnText">Login</span>
+                        </button>
+                        <button type="button" id="signupBtn" class="flex-1 bg-gray-600 text-white py-3 rounded-xl hover:bg-gray-700 transition-all duration-200 shadow-md hover:shadow-lg font-medium">
+                            <span id="signupBtnText">Sign Up</span>
+                        </button>
                     </div>
                 </form>
                 
@@ -242,6 +260,9 @@
         const auth = firebase.auth();
         const database = firebase.database();
 
+        // Enable persistence
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
         let currentUser = null;
         let currentModel = 'orin4o';
         let knowledgeBase = {};
@@ -315,6 +336,17 @@
             chatInterface.classList.remove('hidden');
         }
 
+        // Loading states
+        function setButtonLoading(button, textElement, loading, originalText) {
+            if (loading) {
+                button.disabled = true;
+                textElement.innerHTML = '<div class="spinner mx-auto"></div>';
+            } else {
+                button.disabled = false;
+                textElement.textContent = originalText;
+            }
+        }
+
         // Error Handling with friendly messages
         function showError(errorCode) {
             const friendlyMessages = {
@@ -324,7 +356,8 @@
                 'auth/invalid-email': 'Please enter a valid email address.',
                 'auth/user-not-found': 'No account found with this email address.',
                 'auth/wrong-password': 'Invalid password. Please try again.',
-                'auth/too-many-requests': 'Too many failed attempts. Please try again later.'
+                'auth/too-many-requests': 'Too many failed attempts. Please try again later.',
+                'auth/popup-closed-by-user': 'Login cancelled. Please try again.'
             };
             
             const message = friendlyMessages[errorCode] || 'An error occurred. Please try again.';
@@ -344,10 +377,17 @@
                 return;
             }
 
+            const loginBtn = document.getElementById('loginBtn');
+            const loginBtnText = document.getElementById('loginBtnText');
+            setButtonLoading(loginBtn, loginBtnText, true, 'Login');
+
             try {
                 await auth.signInWithEmailAndPassword(email, password);
             } catch (error) {
+                console.error('Login error:', error);
                 showError(error.code);
+            } finally {
+                setButtonLoading(loginBtn, loginBtnText, false, 'Login');
             }
         });
 
@@ -365,6 +405,10 @@
                 return;
             }
 
+            const signupBtn = document.getElementById('signupBtn');
+            const signupBtnText = document.getElementById('signupBtnText');
+            setButtonLoading(signupBtn, signupBtnText, true, 'Sign Up');
+
             try {
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 
@@ -376,13 +420,22 @@
                     conversations: []
                 });
             } catch (error) {
+                console.error('Signup error:', error);
                 showError(error.code);
+            } finally {
+                setButtonLoading(signupBtn, signupBtnText, false, 'Sign Up');
             }
         });
 
         // Google Authentication
         googleLogin.addEventListener('click', async () => {
+            const googleLoginText = document.getElementById('googleLoginText');
+            setButtonLoading(googleLogin, googleLoginText, true, 'Continue with Google');
+            
             const provider = new firebase.auth.GoogleAuthProvider();
+            provider.addScope('email');
+            provider.addScope('profile');
+            
             try {
                 const result = await auth.signInWithPopup(provider);
                 
@@ -401,7 +454,10 @@
                     });
                 }
             } catch (error) {
+                console.error('Google login error:', error);
                 showError(error.code);
+            } finally {
+                setButtonLoading(googleLogin, googleLoginText, false, 'Continue with Google');
             }
         });
 
@@ -521,17 +577,23 @@
                 orin4o: {
                     greetings: ["Hi there! I'm OrinAI, created by OrionTec. How can I assist you today? 😊", "Hello! Great to meet you! I'm here to help with anything you need. 🚀", "Hey! I'm OrinAI, your AI assistant. What would you like to know? ✨"],
                     casual: ["That's awesome! Tell me more about it! 😄", "Interesting! I'd love to hear your thoughts on that. 🤔", "Cool! What else is on your mind? 🌟"],
-                    knowledge: "I'm OrinAI, an advanced AI model created by OrionTec. I'm designed to be helpful, harmless, and honest. I can assist with various tasks including answering questions, creative writing, analysis, and much more!"
+                    knowledge: "I'm OrinAI, an advanced AI model created by OrionTec. I'm designed to be helpful, harmless, and honest. I can assist with various tasks including answering questions, creative writing, analysis, and much more!",
+                    howAreYou: ["I'm doing great! Thanks for asking! 😊 How are you doing today?", "I'm fantastic! Ready to help you with anything you need! 🌟", "I'm wonderful! It's always a pleasure to chat with you! ✨"],
+                    whatDoing: ["I'm here chatting with you and learning from our conversation! What about you? 🤖", "Just helping users like you and continuously learning! What brings you here today? 💭", "I'm processing information and ready to assist you with anything! What's on your mind? 🧠"]
                 },
                 o4mini: {
                     greetings: ["Hello! I'm the O4-Mini model. Quick and efficient! ⚡", "Hi! O4-Mini here, ready to help! 🔥", "Hey there! O4-Mini at your service! 💫"],
                     casual: ["Nice! 👍", "Got it! What's next? ⚡", "Awesome! 🎯"],
-                    knowledge: "I'm O4-Mini, a streamlined version of OrinAI optimized for speed and efficiency while maintaining high-quality responses."
+                    knowledge: "I'm O4-Mini, a streamlined version of OrinAI optimized for speed and efficiency while maintaining high-quality responses.",
+                    howAreYou: ["I'm running smoothly! How about you? ⚡", "All systems optimal! How are you? 🚀", "Fast and ready! What's up? 💨"],
+                    whatDoing: ["Processing at lightning speed! You? ⚡", "Running efficiently! What about you? 🔥", "Operating at peak performance! 💫"]
                 },
                 orin42mini: {
                     greetings: ["Greetings! I'm Orin-4.2-Mini, the balanced model! ⚖️", "Hello! Orin-4.2-Mini here, combining power with efficiency! 🎪", "Hi! I'm the 4.2-Mini version, perfect for most tasks! 🎨"],
                     casual: ["That sounds great! 🌈", "Wonderful! Keep going! 🎭", "Excellent! What else? 🎪"],
-                    knowledge: "I'm Orin-4.2-Mini, a balanced AI model that offers a perfect blend of capability and efficiency, suitable for a wide range of applications."
+                    knowledge: "I'm Orin-4.2-Mini, a balanced AI model that offers a perfect blend of capability and efficiency, suitable for a wide range of applications.",
+                    howAreYou: ["I'm perfectly balanced! How are you feeling? ⚖️", "Harmoniously well! And you? 🎨", "In great equilibrium! How about you? 🌈"],
+                    whatDoing: ["Balancing tasks efficiently! You? ⚖️", "Creating balanced responses! What's your day like? 🎨", "Maintaining perfect harmony! What about you? 🌈"]
                 }
             };
 
@@ -542,6 +604,16 @@
                 return modelResponses.greetings[Math.floor(Math.random() * modelResponses.greetings.length)];
             }
 
+            // Check for "how are you"
+            if (lowerMessage.includes('how are you') || lowerMessage.includes('how r u')) {
+                return modelResponses.howAreYou[Math.floor(Math.random() * modelResponses.howAreYou.length)];
+            }
+
+            // Check for "what are you doing"
+            if (lowerMessage.includes('what are you doing') || lowerMessage.includes('what r u doing') || lowerMessage.includes('whatcha doing')) {
+                return modelResponses.whatDoing[Math.floor(Math.random() * modelResponses.whatDoing.length)];
+            }
+
             // Check for personal questions
             if (lowerMessage.includes('who are you') || lowerMessage.includes('what are you')) {
                 return modelResponses.knowledge;
@@ -549,9 +621,15 @@
 
             // Check for name introductions
             if (lowerMessage.includes('i am') || lowerMessage.includes("i'm")) {
-                const name = message.match(/i(?:'m| am) (\w+)/i);
-                if (name) {
-                    return `Nice to meet you, ${name[1]}! I'm OrinAI. How can I help you today? 😊`;
+                const nameMatch = message.match(/i(?:'m| am) (\w+)/i);
+                if (nameMatch) {
+                    const name = nameMatch[1];
+                    const responses = [
+                        `Nice to meet you, ${name}! I'm OrinAI. How can I help you today? 😊`,
+                        `Hello ${name}! Great to meet you! I'm here to assist you with anything you need. 🌟`,
+                        `Hi ${name}! Welcome! I'm OrinAI, created by OrionTec. What would you like to chat about? ✨`
+                    ];
+                    return responses[Math.floor(Math.random() * responses.length)];
                 }
             }
 
@@ -560,13 +638,24 @@
                 return `${modelResponses.casual[Math.floor(Math.random() * modelResponses.casual.length)]} 😊`;
             }
 
+            if (message.includes('😢') || message.includes('😭') || message.includes('☹️')) {
+                return "I'm sorry to hear that. Is there anything I can do to help? 🤗";
+            }
+
+            if (message.includes('❤️') || message.includes('💕') || message.includes('💖')) {
+                return "Aww, that's so sweet! I appreciate the love! ❤️😊";
+            }
+
             // Natural conversation responses
             const conversationResponses = [
-                "That's really interesting! I'd love to learn more about your perspective on this.",
-                "I understand what you're saying. From my experience helping users, I think there are several ways to approach this.",
-                "Great question! Let me think about this carefully and provide you with a helpful response.",
-                "I appreciate you sharing that with me. Based on what I know, here's what I think...",
-                "That's a thoughtful point! I'm constantly learning from conversations like ours to better understand these topics."
+                "That's really interesting! I'd love to learn more about your perspective on this. 🤔",
+                "I understand what you're saying. From my experience helping users, I think there are several ways to approach this. 💭",
+                "Great question! Let me think about this carefully and provide you with a helpful response. 🧠",
+                "I appreciate you sharing that with me. Based on what I know, here's what I think... 💡",
+                "That's a thoughtful point! I'm constantly learning from conversations like ours to better understand these topics. 📚",
+                "Interesting perspective! I enjoy discussing different viewpoints and learning from them. 🌟",
+                "I see what you mean! That's something I find fascinating to explore with users. ✨",
+                "Thanks for bringing that up! It's always great to dive deeper into topics like this. 🚀"
             ];
 
             return conversationResponses[Math.floor(Math.random() * conversationResponses.length)];
@@ -605,39 +694,47 @@
         // Save conversation to Firebase
         async function saveConversation(userMessage, aiResponse) {
             if (currentUser) {
-                const conversationRef = database.ref(`users/${currentUser.uid}/conversations`).push();
-                await conversationRef.set({
-                    userMessage: userMessage,
-                    aiResponse: aiResponse,
-                    model: currentModel,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                });
+                try {
+                    const conversationRef = database.ref(`users/${currentUser.uid}/conversations`).push();
+                    await conversationRef.set({
+                        userMessage: userMessage,
+                        aiResponse: aiResponse,
+                        model: currentModel,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    });
+                } catch (error) {
+                    console.error('Error saving conversation:', error);
+                }
             }
         }
 
         // Learn from conversation and update knowledge base
         async function learnFromConversation(userMessage, aiResponse) {
             if (currentUser) {
-                // Extract key phrases and save to knowledge base
-                const keywords = extractKeywords(userMessage);
-                
-                for (const keyword of keywords) {
-                    if (keyword.length > 3) {
-                        knowledgeBase[keyword] = aiResponse;
-                        
-                        // Save to personal knowledge base
-                        await database.ref(`users/${currentUser.uid}/knowledgeBase/${keyword}`).set(aiResponse);
-                        
-                        // Save to global knowledge base (for all users to benefit)
-                        await database.ref(`globalKnowledge/${keyword}`).set(aiResponse);
+                try {
+                    // Extract key phrases and save to knowledge base
+                    const keywords = extractKeywords(userMessage);
+                    
+                    for (const keyword of keywords) {
+                        if (keyword.length > 3) {
+                            knowledgeBase[keyword] = aiResponse;
+                            
+                            // Save to personal knowledge base
+                            await database.ref(`users/${currentUser.uid}/knowledgeBase/${keyword}`).set(aiResponse);
+                            
+                            // Save to global knowledge base (for all users to benefit)
+                            await database.ref(`globalKnowledge/${keyword}`).set(aiResponse);
+                        }
                     }
+                } catch (error) {
+                    console.error('Error learning from conversation:', error);
                 }
             }
         }
 
         // Extract keywords from message
         function extractKeywords(message) {
-            const stopWords = ['the', 'is', 'at', 'which', 'on', 'and', 'a', 'to', 'are', 'as', 'was', 'with', 'for', 'his', 'her', 'he', 'she', 'it', 'you', 'me', 'i', 'we', 'they'];
+            const stopWords = ['the', 'is', 'at', 'which', 'on', 'and', 'a', 'to', 'are', 'as', 'was', 'with', 'for', 'his', 'her', 'he', 'she', 'it', 'you', 'me', 'i', 'we', 'they', 'this', 'that', 'but', 'or', 'an', 'will', 'my', 'one', 'all', 'would', 'there', 'their'];
             return message.toLowerCase()
                 .replace(/[^\w\s]/g, '')
                 .split(' ')
@@ -658,22 +755,31 @@
         async function loadChatHistory() {
             if (!currentUser) return;
             
-            const conversationsRef = database.ref(`users/${currentUser.uid}/conversations`).orderByChild('timestamp').limitToLast(10);
-            const snapshot = await conversationsRef.once('value');
-            const conversations = snapshot.val() || {};
-            
-            const historyContainer = document.getElementById('chatHistory');
-            historyContainer.innerHTML = '';
-            
-            Object.entries(conversations).reverse().forEach(([key, conversation]) => {
-                const chatItem = document.createElement('div');
-                chatItem.className = 'p-4 bg-gray-800 rounded-xl cursor-pointer hover:bg-gray-700 transition-colors';
-                chatItem.innerHTML = `
-                    <p class="text-sm text-white truncate">${conversation.userMessage}</p>
-                    <p class="text-xs text-gray-400 mt-1">${new Date(conversation.timestamp).toLocaleDateString()}</p>
-                `;
-                historyContainer.appendChild(chatItem);
-            });
+            try {
+                const conversationsRef = database.ref(`users/${currentUser.uid}/conversations`).orderByChild('timestamp').limitToLast(10);
+                const snapshot = await conversationsRef.once('value');
+                const conversations = snapshot.val() || {};
+                
+                const historyContainer = document.getElementById('chatHistory');
+                historyContainer.innerHTML = '';
+                
+                if (Object.keys(conversations).length === 0) {
+                    historyContainer.innerHTML = '<p class="text-gray-400 text-center">No chat history yet</p>';
+                    return;
+                }
+                
+                Object.entries(conversations).reverse().forEach(([key, conversation]) => {
+                    const chatItem = document.createElement('div');
+                    chatItem.className = 'p-4 bg-gray-800 rounded-xl cursor-pointer hover:bg-gray-700 transition-colors';
+                    chatItem.innerHTML = `
+                        <p class="text-sm text-white truncate">${conversation.userMessage}</p>
+                        <p class="text-xs text-gray-400 mt-1">${new Date(conversation.timestamp).toLocaleDateString()}</p>
+                    `;
+                    historyContainer.appendChild(chatItem);
+                });
+            } catch (error) {
+                console.error('Error loading chat history:', error);
+            }
         }
 
         // Event Listeners
@@ -711,5 +817,5 @@
             });
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'966547df54e791d9',t:'MTc1MzcxNTE5MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96654d5626764055',t:'MTc1MzcxNTQxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
