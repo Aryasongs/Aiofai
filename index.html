@@ -254,10 +254,48 @@
 
     <!-- Main Chat Interface -->
     <div id="chatInterface" class="hidden">
+        <!-- Sidebar -->
+        <div id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-gray-900 text-white transform -translate-x-full transition-transform duration-300 z-50">
+            <div class="p-4 border-b border-gray-700">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-semibold">Chat History</h2>
+                    <button id="closeSidebar" class="text-gray-400 hover:text-white">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <button id="newChatBtn" class="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm font-medium">
+                    + New Chat
+                </button>
+            </div>
+            <div id="chatList" class="flex-1 overflow-y-auto p-4 space-y-2">
+                <!-- Chat history will be populated here -->
+            </div>
+            <div class="p-4 border-t border-gray-700">
+                <div class="text-xs text-gray-400 mb-2">Daily Usage</div>
+                <div class="bg-gray-800 rounded-full h-2 mb-2">
+                    <div id="usageBar" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
+                </div>
+                <div class="text-xs text-gray-400">
+                    <span id="usageText">0/90 messages</span>
+                    <span id="subscriptionBadge" class="float-right text-yellow-400">FREE</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Overlay -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+
         <!-- Header -->
         <header class="bg-white border-b border-gray-200 header-mobile px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-1 sm:gap-2 md:gap-4">
+                    <button id="sidebarToggle" class="text-gray-600 hover:text-gray-800 mr-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
                     <div class="flex items-center gap-1 sm:gap-2">
                         <div class="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
                             <span class="text-white font-bold text-xs sm:text-sm">O</span>
@@ -281,7 +319,7 @@
         <!-- Model Selection -->
         <div class="bg-white border-b border-gray-200 model-selection-mobile px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4">
             <div class="flex gap-2 sm:gap-3 md:gap-4 overflow-x-auto pb-1">
-                <button class="model-selector orin4o-theme px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0" data-model="orin4o">
+                <button class="model-selector orin4o-theme px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0 opacity-100 transform scale-100" data-model="orin4o">
                     <span class="hidden sm:inline">🧠 Orin4o - Advanced</span>
                     <span class="sm:hidden">🧠 Orin4o</span>
                 </button>
@@ -293,6 +331,68 @@
                     <span class="hidden sm:inline">🚀 Orin-4.2-Mini</span>
                     <span class="sm:hidden">🚀 4.2-Mini</span>
                 </button>
+                <button id="orin5oBtn" class="model-selector bg-gradient-to-r from-yellow-500 to-orange-500 px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0 text-white relative" data-model="orin5o">
+                    <span class="hidden sm:inline">🌟 Orin5o - Premium</span>
+                    <span class="sm:hidden">🌟 Orin5o</span>
+                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1 rounded-full">PLUS</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Daily Limit Modal -->
+        <div id="limitModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl p-6 max-w-md w-full">
+                <div class="text-center">
+                    <div class="text-4xl mb-4">⏰</div>
+                    <h2 class="text-xl font-bold text-gray-800 mb-2">Daily Limit Reached!</h2>
+                    <p class="text-gray-600 mb-4">You've used all 90 messages for today. Your limit will reset in:</p>
+                    <div id="resetTimer" class="text-2xl font-bold text-blue-600 mb-6">12:00:00</div>
+                    <div class="space-y-3">
+                        <button id="upgradeToPlusBtn" class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 rounded-lg font-medium hover:from-yellow-600 hover:to-orange-600 transition">
+                            🌟 Get OrinAI Plus - ₹120
+                        </button>
+                        <button id="closeLimitModal" class="w-full bg-gray-200 text-gray-800 py-3 rounded-lg font-medium hover:bg-gray-300 transition">
+                            Try After 12 Hours
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Plus Upgrade Modal -->
+        <div id="plusModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl p-6 max-w-md w-full">
+                <div class="text-center">
+                    <div class="text-4xl mb-4">🌟</div>
+                    <h2 class="text-xl font-bold text-gray-800 mb-2">Upgrade to OrinAI Plus</h2>
+                    <div class="text-left space-y-3 mb-6">
+                        <div class="flex items-center gap-2">
+                            <span class="text-green-500">✓</span>
+                            <span class="text-gray-700">Unlimited daily messages</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-green-500">✓</span>
+                            <span class="text-gray-700">Access to Orin5o (Most Advanced)</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-green-500">✓</span>
+                            <span class="text-gray-700">Priority support</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-green-500">✓</span>
+                            <span class="text-gray-700">Enhanced AI memory</span>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-800 mb-6">₹120<span class="text-lg text-gray-500">/month</span></div>
+                    <div class="space-y-3">
+                        <button id="confirmUpgradeBtn" class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 rounded-lg font-medium hover:from-yellow-600 hover:to-orange-600 transition">
+                            Upgrade Now
+                        </button>
+                        <button id="closePlusModal" class="w-full bg-gray-200 text-gray-800 py-3 rounded-lg font-medium hover:bg-gray-300 transition">
+                            Maybe Later
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -370,33 +470,62 @@
 
         // Global variables
         let currentUser = null;
-        let selectedModel = null;
+        let selectedModel = 'orin4o'; // Default to Orin4o
         let chatHistory = [];
+        let currentChatId = null;
+        let allChats = {};
+        let dailyMessageCount = 0;
+        let userSubscription = 'free'; // 'free' or 'plus'
+        let aiMemory = {};
 
         // Model configurations
         const modelConfigs = {
             'orin4o': {
                 name: 'Orin4o',
-                personality: 'Advanced reasoning AI with deep analytical capabilities',
+                personality: 'Smart and helpful AI assistant',
                 emoji: '🧠',
-                responseStyle: 'detailed',
-                knowledge: 'Extensive knowledge base with focus on complex problem solving'
+                responseStyle: 'natural',
+                knowledge: 'Advanced AI with natural conversation abilities',
+                limit: 90
             },
             'o4mini': {
                 name: 'O4Mini',
-                personality: 'Fast and efficient AI assistant',
+                personality: 'Quick and efficient AI helper',
                 emoji: '⚡',
-                responseStyle: 'concise',
-                knowledge: 'Optimized knowledge base for quick responses'
+                responseStyle: 'fast',
+                knowledge: 'Fast AI for quick responses',
+                limit: 90
             },
             'orin-4.2-mini': {
                 name: 'Orin-4.2-Mini',
-                personality: 'Balanced AI with creative and analytical capabilities',
+                personality: 'Balanced AI with creative thinking',
                 emoji: '🚀',
-                responseStyle: 'balanced',
-                knowledge: 'Comprehensive knowledge base with creative insights'
+                responseStyle: 'creative',
+                knowledge: 'Creative AI for innovative solutions',
+                limit: 90
+            },
+            'orin5o': {
+                name: 'Orin5o',
+                personality: 'Most advanced AI with superior intelligence',
+                emoji: '🌟',
+                responseStyle: 'advanced',
+                knowledge: 'Premium AI with unlimited capabilities',
+                limit: 'unlimited',
+                plusOnly: true
             }
         };
+
+        // Daily limits
+        const DAILY_LIMITS = {
+            free: 90,
+            plus: 'unlimited'
+        };
+
+        // Sensitive content filter
+        const SENSITIVE_KEYWORDS = [
+            'violence', 'harm', 'illegal', 'drugs', 'weapon', 'suicide', 'hate', 'discrimination',
+            'adult content', 'explicit', 'inappropriate', 'offensive', 'dangerous'
+        ];
 
         // Global auth state
         let isSignupMode = false;
@@ -533,8 +662,15 @@
         });
 
         async function sendMessage() {
-            if (!selectedModel) {
-                alert('Please select an AI model first!');
+            // Check daily limit first
+            if (!checkDailyLimit()) {
+                showLimitModal();
+                return;
+            }
+
+            // Check if Plus-only model is selected without subscription
+            if (modelConfigs[selectedModel].plusOnly && userSubscription !== 'plus') {
+                document.getElementById('plusModal').classList.remove('hidden');
                 return;
             }
 
@@ -542,6 +678,9 @@
             const message = messageInput.value.trim();
             
             if (!message) return;
+
+            // Increment daily count
+            incrementDailyCount();
 
             // Add user message
             addMessage('user', message);
@@ -584,7 +723,7 @@
                 
                 if (knowledgeResult && Math.random() > 0.3) {
                     // Use knowledge base response 70% of the time if found
-                    aiResponse = `Based on my previous learning: ${knowledgeResult.aiResponse} ${modelConfigs[selectedModel].emoji}`;
+                    aiResponse = `I remember discussing something similar! ${modelConfigs[selectedModel].emoji} ${knowledgeResult.aiResponse}`;
                 } else {
                     // Generate new response
                     aiResponse = generateAIResponse(message, selectedModel);
@@ -711,38 +850,57 @@
             }
         }
 
+        // Sensitive content filter
+        function containsSensitiveContent(message) {
+            const lowerMessage = message.toLowerCase();
+            return SENSITIVE_KEYWORDS.some(keyword => lowerMessage.includes(keyword));
+        }
+
+        // Enhanced AI response with memory and learning
         function generateAIResponse(userMessage, model) {
             const config = modelConfigs[model];
             const lowerMessage = userMessage.toLowerCase();
             
+            // Check for sensitive content
+            if (containsSensitiveContent(userMessage)) {
+                return `I understand you're asking about something, but I'm designed to keep our conversations positive and helpful. ${config.emoji} Let's talk about something else! How can I assist you with information, learning, or creative tasks?`;
+            }
+            
+            // Check AI memory for similar questions
+            const memoryKey = lowerMessage.substring(0, 20);
+            if (aiMemory[memoryKey] && Math.random() > 0.4) {
+                return `I remember discussing something similar! ${config.emoji} ${aiMemory[memoryKey]} Is there anything specific you'd like to know more about?`;
+            }
+            
             // Personal introduction responses
             if (lowerMessage.includes('who are you') || lowerMessage.includes('what are you')) {
-                return `Hi! I'm ${config.name} ${config.emoji}, an AI assistant created by OrionTec. I'm here to help you with any questions or tasks you might have. I'm constantly learning and improving to provide you with the best assistance possible!`;
+                const response = `Hi! I'm ${config.name} ${config.emoji}, an AI assistant created by OrionTec. I'm here to help you with questions, learning, creative tasks, and friendly conversations. What would you like to explore today?`;
+                aiMemory[memoryKey] = response;
+                return response;
             }
             
             // Greeting responses
             if (lowerMessage.includes('hi') || lowerMessage.includes('hello') || lowerMessage.includes('hey')) {
                 const greetings = [
-                    `Hello! ${config.emoji} I'm ${config.name}, your AI assistant. How can I help you today?`,
-                    `Hi there! ${config.emoji} Great to meet you! I'm ${config.name} from OrionTec. What would you like to know?`,
-                    `Hey! ${config.emoji} I'm ${config.name}, ready to assist you with anything you need!`
+                    `Hello! ${config.emoji} Great to see you! How can I help you today?`,
+                    `Hi there! ${config.emoji} I'm here and ready to assist. What's on your mind?`,
+                    `Hey! ${config.emoji} Nice to chat with you! What would you like to talk about?`
                 ];
-                return greetings[Math.floor(Math.random() * greetings.length)];
+                const response = greetings[Math.floor(Math.random() * greetings.length)];
+                aiMemory[memoryKey] = response;
+                return response;
             }
             
             // How are you responses
             if (lowerMessage.includes('how are you')) {
                 const statusResponses = [
-                    `I'm doing great, thank you for asking! ${config.emoji} I'm running smoothly and ready to help you with anything!`,
-                    `I'm fantastic! ${config.emoji} Always excited to learn and help users like you!`,
-                    `I'm doing wonderful! ${config.emoji} Each conversation helps me grow and improve!`
+                    `I'm doing great, thanks for asking! ${config.emoji} Ready to help with whatever you need.`,
+                    `I'm fantastic! ${config.emoji} Each conversation teaches me something new.`,
+                    `I'm doing wonderful! ${config.emoji} Always excited to learn and help.`
                 ];
-                return statusResponses[Math.floor(Math.random() * statusResponses.length)];
-            }
-            
-            // What are you doing responses
-            if (lowerMessage.includes('what are you doing')) {
-                return `Right now I'm chatting with you! ${config.emoji} I'm always here, ready to answer questions, help with tasks, or just have a friendly conversation. What would you like to talk about?`;
+                const response = statusResponses[Math.floor(Math.random() * statusResponses.length)];
+                aiMemory[memoryKey] = response;
+                return response;
             }
             
             // Name introduction responses
@@ -750,47 +908,72 @@
                 const nameMatch = userMessage.match(/(?:i am|my name is|i'm)\s+(\w+)/i);
                 if (nameMatch) {
                     const userName = nameMatch[1];
-                    return `Nice to meet you, ${userName}! ${config.emoji} I'm ${config.name}, your AI assistant from OrionTec. I'm here to help you with anything you need. How can I assist you today?`;
+                    const response = `Nice to meet you, ${userName}! ${config.emoji} I'll remember your name. How can I help you today?`;
+                    aiMemory[`user_name_${currentUser.uid}`] = userName;
+                    return response;
                 }
             }
             
-            // Model-specific responses
-            const responses = {
+            // Question-based responses
+            if (lowerMessage.includes('what is') || lowerMessage.includes('how to') || lowerMessage.includes('why') || lowerMessage.includes('when')) {
+                const questionResponses = {
+                    'orin4o': [
+                        `That's an excellent question! ${config.emoji} Let me think about this carefully and provide you with a detailed explanation.`,
+                        `Great question! ${config.emoji} Based on my knowledge, here's what I can tell you about this topic.`,
+                        `I love questions like this! ${config.emoji} Let me break this down for you step by step.`
+                    ],
+                    'o4mini': [
+                        `Quick answer coming up! ${config.emoji} Here's what you need to know.`,
+                        `Got it! ${config.emoji} Let me give you a clear, concise answer.`,
+                        `Perfect question! ${config.emoji} Here's the key information.`
+                    ],
+                    'orin-4.2-mini': [
+                        `Interesting question! ${config.emoji} Let me give you a balanced perspective on this.`,
+                        `Great question! ${config.emoji} Here's my take combining different viewpoints.`,
+                        `I like how you think! ${config.emoji} Let me explore this topic with you.`
+                    ],
+                    'orin5o': [
+                        `Fascinating question! ${config.emoji} With my advanced capabilities, I can provide you with a comprehensive, multi-layered analysis.`,
+                        `Excellent inquiry! ${config.emoji} Let me tap into my enhanced knowledge base to give you the most complete answer.`,
+                        `Outstanding question! ${config.emoji} I'll provide you with deep insights and practical applications.`
+                    ]
+                };
+                
+                const response = questionResponses[model][Math.floor(Math.random() * questionResponses[model].length)];
+                aiMemory[memoryKey] = response;
+                return response;
+            }
+            
+            // General conversation responses
+            const conversationResponses = {
                 'orin4o': [
-                    `Let me analyze this thoroughly... ${config.emoji} Based on my advanced reasoning capabilities, I believe the best approach would be to consider multiple perspectives on this matter.`,
-                    `This is a fascinating question that requires deep analytical thinking. ${config.emoji} From my extensive knowledge base, I can provide you with a comprehensive analysis.`,
-                    `Excellent question! ${config.emoji} My advanced reasoning suggests we should break this down into several key components for better understanding.`,
-                    `I'm processing this with my advanced neural networks... ${config.emoji} Here's my detailed analysis of your query.`
+                    `I understand what you're saying. ${config.emoji} Let me share my thoughts on this topic.`,
+                    `That's interesting! ${config.emoji} Here's my perspective based on what I know.`,
+                    `I see what you mean. ${config.emoji} Let me provide some insights that might be helpful.`
                 ],
                 'o4mini': [
-                    `Quick answer: ${config.emoji} Here's what you need to know in a nutshell!`,
-                    `Got it! ${config.emoji} Let me give you a fast and efficient response.`,
-                    `Perfect! ${config.emoji} Here's the most important information you need.`,
-                    `Speed mode activated! ${config.emoji} Here's your rapid response.`
+                    `Got it! ${config.emoji} Here's my quick take on that.`,
+                    `I hear you! ${config.emoji} Let me respond efficiently.`,
+                    `Understood! ${config.emoji} Here's what I think about that.`
                 ],
                 'orin-4.2-mini': [
-                    `Great question! ${config.emoji} Let me provide you with a balanced perspective that combines analytical thinking with creative insights.`,
-                    `Interesting! ${config.emoji} My balanced approach suggests we look at this from both practical and innovative angles.`,
-                    `I love this question! ${config.emoji} Here's a comprehensive yet creative take on your inquiry.`,
-                    `Balancing logic and creativity... ${config.emoji} Here's my thoughtful response.`
+                    `That's a good point! ${config.emoji} Let me add some creative perspective to that.`,
+                    `I like your thinking! ${config.emoji} Here's how I see it from different angles.`,
+                    `Interesting topic! ${config.emoji} Let me share a balanced view on this.`
+                ],
+                'orin5o': [
+                    `Excellent point! ${config.emoji} With my advanced reasoning, I can offer you multiple sophisticated perspectives on this.`,
+                    `Very thoughtful! ${config.emoji} Let me provide you with a comprehensive analysis using my enhanced capabilities.`,
+                    `Great topic! ${config.emoji} I can give you deep insights and practical solutions for this.`
                 ]
             };
 
-            // Simple response generation based on user input
-            let response = responses[model][Math.floor(Math.random() * responses[model].length)];
+            const response = conversationResponses[model][Math.floor(Math.random() * conversationResponses[model].length)];
             
-            // Add emoji reactions if user used emojis
-            if (userMessage.includes('😊') || userMessage.includes(':)')) {
-                response += ' I can see you\'re happy! 😊';
-            }
-            if (userMessage.includes('❤️') || userMessage.includes('<3')) {
-                response += ' Sending positive vibes your way! ❤️';
-            }
-            if (userMessage.includes('😢') || userMessage.includes(':(')) {
-                response += ' I sense you might be feeling down. I\'m here to help! 🤗';
-            }
-
-            return response + ` I'm constantly learning from our conversations to serve you better!`;
+            // Store in memory for future reference
+            aiMemory[memoryKey] = response;
+            
+            return response;
         }
 
         function showTypingIndicator() {
@@ -804,8 +987,16 @@
         }
 
         function saveChatHistory() {
-            if (currentUser) {
-                database.ref(`chats/${currentUser.uid}`).set(chatHistory);
+            if (currentUser && currentChatId) {
+                // Save to local storage
+                allChats[currentChatId] = {
+                    messages: chatHistory,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(`chats_${currentUser.uid}`, JSON.stringify(allChats));
+                
+                // Save to Firebase
+                database.ref(`chats/${currentUser.uid}`).set(allChats);
                 
                 // Save knowledge for AI learning
                 const lastMessage = chatHistory[chatHistory.length - 1];
@@ -820,7 +1011,14 @@
                     
                     // Store in knowledge base for AI learning
                     database.ref('knowledge').push(knowledgeEntry);
+                    
+                    // Store in AI memory
+                    const memoryKey = knowledgeEntry.userQuery.toLowerCase().substring(0, 20);
+                    aiMemory[memoryKey] = knowledgeEntry.aiResponse;
+                    localStorage.setItem(`aiMemory_${currentUser.uid}`, JSON.stringify(aiMemory));
                 }
+                
+                updateChatList();
             }
         }
         
@@ -845,32 +1043,233 @@
 
         function loadChatHistory() {
             if (currentUser) {
+                // Load from local storage first
+                const localChats = localStorage.getItem(`chats_${currentUser.uid}`);
+                if (localChats) {
+                    allChats = JSON.parse(localChats);
+                    updateChatList();
+                }
+                
+                // Load AI memory
+                const localMemory = localStorage.getItem(`aiMemory_${currentUser.uid}`);
+                if (localMemory) {
+                    aiMemory = JSON.parse(localMemory);
+                }
+                
+                // Load from Firebase as backup
                 database.ref(`chats/${currentUser.uid}`).once('value', (snapshot) => {
-                    const history = snapshot.val();
-                    if (history) {
-                        chatHistory = history;
-                        // Restore chat messages
-                        history.forEach(msg => {
-                            if (msg.sender === 'ai') {
-                                addMessage(msg.sender, msg.content, msg.model, msg.sources);
-                            } else {
-                                addMessage(msg.sender, msg.content);
-                            }
-                        });
+                    const firebaseChats = snapshot.val();
+                    if (firebaseChats) {
+                        allChats = { ...allChats, ...firebaseChats };
+                        localStorage.setItem(`chats_${currentUser.uid}`, JSON.stringify(allChats));
+                        updateChatList();
                     }
                 });
             }
         }
 
+        // Sidebar functionality
+        document.getElementById('sidebarToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('-translate-x-full');
+            document.getElementById('sidebarOverlay').classList.remove('hidden');
+        });
+
+        document.getElementById('closeSidebar').addEventListener('click', closeSidebar);
+        document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+            document.getElementById('sidebarOverlay').classList.add('hidden');
+        }
+
+        // New chat functionality
+        document.getElementById('newChatBtn').addEventListener('click', () => {
+            startNewChat();
+            closeSidebar();
+        });
+
+        function startNewChat() {
+            currentChatId = Date.now().toString();
+            chatHistory = [];
+            document.getElementById('chatMessages').innerHTML = `
+                <div class="max-w-4xl mx-auto">
+                    <div class="text-center py-4 sm:py-6 md:py-8">
+                        <div class="text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-4">🤖</div>
+                        <h2 class="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-1 sm:mb-2">Welcome to OrinAI</h2>
+                        <p class="text-sm sm:text-base text-gray-600">Choose a model above and start your conversation!</p>
+                    </div>
+                </div>
+            `;
+            updateChatList();
+        }
+
+        function updateChatList() {
+            const chatList = document.getElementById('chatList');
+            chatList.innerHTML = '';
+            
+            Object.keys(allChats).reverse().forEach(chatId => {
+                const chat = allChats[chatId];
+                const firstMessage = chat.messages[0]?.content || 'New Chat';
+                const preview = firstMessage.length > 30 ? firstMessage.substring(0, 30) + '...' : firstMessage;
+                
+                const chatItem = document.createElement('div');
+                chatItem.className = `p-3 rounded-lg cursor-pointer hover:bg-gray-800 transition ${chatId === currentChatId ? 'bg-gray-800' : 'bg-gray-700'}`;
+                chatItem.innerHTML = `
+                    <div class="text-sm font-medium text-white truncate">${preview}</div>
+                    <div class="text-xs text-gray-400 mt-1">${new Date(parseInt(chatId)).toLocaleDateString()}</div>
+                `;
+                chatItem.addEventListener('click', () => loadChat(chatId));
+                chatList.appendChild(chatItem);
+            });
+        }
+
+        function loadChat(chatId) {
+            currentChatId = chatId;
+            const chat = allChats[chatId];
+            if (chat) {
+                chatHistory = chat.messages;
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.innerHTML = `
+                    <div class="max-w-4xl mx-auto">
+                        <div class="text-center py-4 sm:py-6 md:py-8">
+                            <div class="text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-4">🤖</div>
+                            <h2 class="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-1 sm:mb-2">Welcome to OrinAI</h2>
+                            <p class="text-sm sm:text-base text-gray-600">Choose a model above and start your conversation!</p>
+                        </div>
+                    </div>
+                `;
+                
+                chat.messages.forEach(msg => {
+                    if (msg.sender === 'ai') {
+                        addMessage(msg.sender, msg.content, msg.model, msg.sources);
+                    } else {
+                        addMessage(msg.sender, msg.content);
+                    }
+                });
+            }
+            updateChatList();
+            closeSidebar();
+        }
+
+        // Daily limit functionality
+        function checkDailyLimit() {
+            if (userSubscription === 'plus') return true;
+            
+            const today = new Date().toDateString();
+            const storedDate = localStorage.getItem('lastUsageDate');
+            const storedCount = parseInt(localStorage.getItem('dailyMessageCount') || '0');
+            
+            if (storedDate !== today) {
+                dailyMessageCount = 0;
+                localStorage.setItem('lastUsageDate', today);
+                localStorage.setItem('dailyMessageCount', '0');
+            } else {
+                dailyMessageCount = storedCount;
+            }
+            
+            return dailyMessageCount < DAILY_LIMITS.free;
+        }
+
+        function incrementDailyCount() {
+            if (userSubscription === 'free') {
+                dailyMessageCount++;
+                localStorage.setItem('dailyMessageCount', dailyMessageCount.toString());
+                updateUsageDisplay();
+            }
+        }
+
+        function updateUsageDisplay() {
+            const usageText = document.getElementById('usageText');
+            const usageBar = document.getElementById('usageBar');
+            const subscriptionBadge = document.getElementById('subscriptionBadge');
+            
+            if (userSubscription === 'plus') {
+                usageText.textContent = 'Unlimited messages';
+                usageBar.style.width = '100%';
+                usageBar.className = 'bg-yellow-500 h-2 rounded-full';
+                subscriptionBadge.textContent = 'PLUS';
+                subscriptionBadge.className = 'float-right text-yellow-400';
+            } else {
+                usageText.textContent = `${dailyMessageCount}/90 messages`;
+                const percentage = (dailyMessageCount / 90) * 100;
+                usageBar.style.width = `${percentage}%`;
+                usageBar.className = percentage > 80 ? 'bg-red-600 h-2 rounded-full' : 'bg-blue-600 h-2 rounded-full';
+                subscriptionBadge.textContent = 'FREE';
+                subscriptionBadge.className = 'float-right text-yellow-400';
+            }
+        }
+
+        function showLimitModal() {
+            document.getElementById('limitModal').classList.remove('hidden');
+            startResetTimer();
+        }
+
+        function startResetTimer() {
+            const timer = document.getElementById('resetTimer');
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+            
+            const updateTimer = () => {
+                const now = new Date();
+                const diff = tomorrow - now;
+                
+                if (diff <= 0) {
+                    timer.textContent = '00:00:00';
+                    return;
+                }
+                
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                timer.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            };
+            
+            updateTimer();
+            setInterval(updateTimer, 1000);
+        }
+
+        // Modal event listeners
+        document.getElementById('closeLimitModal').addEventListener('click', () => {
+            document.getElementById('limitModal').classList.add('hidden');
+        });
+
+        document.getElementById('upgradeToPlusBtn').addEventListener('click', () => {
+            document.getElementById('limitModal').classList.add('hidden');
+            document.getElementById('plusModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closePlusModal').addEventListener('click', () => {
+            document.getElementById('plusModal').classList.add('hidden');
+        });
+
+        document.getElementById('confirmUpgradeBtn').addEventListener('click', () => {
+            // Simulate upgrade process
+            userSubscription = 'plus';
+            localStorage.setItem('userSubscription', 'plus');
+            document.getElementById('plusModal').classList.add('hidden');
+            updateUsageDisplay();
+            alert('🌟 Congratulations! You\'ve been upgraded to OrinAI Plus! Enjoy unlimited messages and access to Orin5o!');
+        });
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            // Set first model as default selection style
-            const firstModel = document.querySelector('.model-selector');
-            if (firstModel) {
-                firstModel.style.opacity = '0.7';
-                firstModel.style.transform = 'scale(0.95)';
-            }
+            // Load user subscription
+            userSubscription = localStorage.getItem('userSubscription') || 'free';
+            
+            // Set Orin4o as default selected
+            document.getElementById('currentModel').textContent = modelConfigs[selectedModel].name;
+            
+            // Check daily limit
+            checkDailyLimit();
+            updateUsageDisplay();
+            
+            // Initialize chat
+            currentChatId = Date.now().toString();
+            allChats[currentChatId] = { messages: [], timestamp: Date.now() };
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9664c2b794303c5e',t:'MTc1MzcwOTczNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9664d65cd7b13e40',t:'MTc1MzcxMDU0MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
