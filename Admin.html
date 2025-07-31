@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Orion+ Admin Panel | Advanced Management Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2557a7, #1e4a8c);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(37, 87, 167, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #218838);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        }
+        
+        .alert {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border-left: 4px solid;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            border-left-color: #17a2b8;
+            color: #0c5460;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #2557a7;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 87, 167, 0.1);
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-interview_ready {
+            background: #e2e3f1;
+            color: #6f42c1;
+        }
+        
+        .status-completed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .admin-header {
+            background: linear-gradient(135deg, #2557a7, #1e4a8c);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            border-radius: 0 0 20px 20px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2557a7;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen">
+        <!-- Authentication Screen -->
+        <div id="authScreen" class="min-h-screen flex items-center justify-center px-4">
+            <div class="card p-8 max-w-md w-full">
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-10 h-10" fill="white" viewBox="0 0 24 24">
+                            <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V21C3 22.11 3.89 23 5 23H19C20.11 23 21 22.11 21 21V9M19 9H14V4H19V9Z"/>
+                        </svg>
+                    </div>
+                    <h1 class="text-3xl font-bold text-red-600 mb-2">🔒 ADMIN ACCESS</h1>
+                    <p class="text-gray-600">Web Orion+ Management Dashboard</p>
+                    <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <p class="text-red-700 text-sm font-medium">⚠️ RESTRICTED ACCESS</p>
+                        <p class="text-red-600 text-xs">Only authorized administrators can access this panel</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Admin Email</label>
+                        <input type="email" id="adminEmail" class="form-control" placeholder="admin@oriontec.xyz" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Admin Password</label>
+                        <input type="password" id="adminPassword" class="form-control" placeholder="Enter admin password" required>
+                    </div>
+                    <button onclick="adminLogin()" class="btn-primary w-full">
+                        🔐 Access Admin Panel
+                    </button>
+                </div>
+                
+                <div class="text-center mt-6">
+                    <p class="text-xs text-gray-500">🔒 This is a secure admin portal</p>
+                    <p class="text-xs text-gray-500">All access attempts are logged and monitored</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="adminDashboard" class="hidden">
+            <!-- Header -->
+            <div class="admin-header">
+                <div class="container mx-auto px-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mr-4">
+                                <svg class="w-8 h-8" fill="white" viewBox="0 0 24 24">
+                                    <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V21C3 22.11 3.89 23 5 23H19C20.11 23 21 22.11 21 21V9M19 9H14V4H19V9Z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h1 class="text-2xl font-bold">Web Orion+ Admin Panel</h1>
+                                <p class="text-blue-100">Advanced Management Dashboard</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <div class="text-right text-sm">
+                                <p class="text-blue-100">Logged in as:</p>
+                                <p class="font-medium" id="adminUserEmail">admin@example.com</p>
+                                <p class="text-xs text-blue-200">
+                                    <span id="currentDateTime">Loading...</span>
+                                </p>
+                            </div>
+                            <button onclick="adminLogout()" class="btn-secondary">
+                                🚪 Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container mx-auto px-4 pb-8">
+                <!-- Stats Dashboard -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in">
+                    <div class="stat-card bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+                        <div class="text-3xl font-bold mb-2" id="totalApplications">0</div>
+                        <div class="text-blue-100">Total Applications</div>
+                        <div class="mt-2 text-xs text-blue-200">📊 All time submissions</div>
+                    </div>
+                    <div class="stat-card bg-gradient-to-br from-yellow-500 to-yellow-600 text-white">
+                        <div class="text-3xl font-bold mb-2" id="pendingApplications">0</div>
+                        <div class="text-yellow-100">Pending Review</div>
+                        <div class="mt-2 text-xs text-yellow-200">⏳ Awaiting approval</div>
+                    </div>
+                    <div class="stat-card bg-gradient-to-br from-green-500 to-green-600 text-white">
+                        <div class="text-3xl font-bold mb-2" id="approvedApplications">0</div>
+                        <div class="text-green-100">Approved</div>
+                        <div class="mt-2 text-xs text-green-200">✅ Successfully processed</div>
+                    </div>
+                    <div class="stat-card bg-gradient-to-br from-red-500 to-red-600 text-white">
+                        <div class="text-3xl font-bold mb-2" id="rejectedApplications">0</div>
+                        <div class="text-red-100">Rejected</div>
+                        <div class="mt-2 text-xs text-red-200">❌ Did not meet criteria</div>
+                    </div>
+                </div>
+
+                <!-- Controls Section -->
+                <div class="card p-6 mb-8 fade-in">
+                    <h2 class="text-xl font-bold mb-4">🔧 Admin Controls</h2>
+                    
+                    <!-- Search and Filter -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">🔍 Search Applications</label>
+                            <input type="text" id="adminSearch" class="form-control" placeholder="Search by ID, Name, Email, or Company...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">📊 Filter by Status</label>
+                            <select id="statusFilter" class="form-control">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                                <option value="interview_ready">Interview Ready</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">📅 Filter by Date</label>
+                            <input type="date" id="dateFilter" class="form-control">
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="loadAdminData()" class="btn-primary">
+                            🔄 Refresh Data
+                        </button>
+                        <button onclick="bulkApprove()" class="btn-success">
+                            ✅ Bulk Approve Selected
+                        </button>
+                        <button onclick="bulkReject()" class="btn-danger">
+                            ❌ Bulk Reject Selected
+                        </button>
+                        <button onclick="exportData()" class="btn-secondary">
+                            📊 Export to CSV
+                        </button>
+                        <button onclick="generateReport()" class="btn-primary">
+                            📈 Generate Report
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Applications Table -->
+                <div class="table-container fade-in">
+                    <div class="p-6 border-b border-gray-200">
+                        <h2 class="text-xl font-bold">📋 Application Management</h2>
+                        <p class="text-gray-600">Manage and review all candidate applications</p>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <input type="checkbox" id="selectAll" onchange="toggleSelectAll()"> Select
+                                    </th>
+                                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Application ID</th>
+                                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Candidate</th>
+                                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
+                                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Loading State -->
+                    <div id="loadingState" class="text-center py-12">
+                        <div class="loading-spinner"></div>
+                        <p class="text-gray-600 mt-4">Loading applications from Firebase...</p>
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div id="emptyState" class="text-center py-12 hidden">
+                        <div class="text-6xl mb-4">📭</div>
+                        <h3 class="text-xl font-bold text-gray-600 mb-2">No Applications Found</h3>
+                        <p class="text-gray-500">No applications match your current filters.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Candidate Detail Modal -->
+    <div id="candidateModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="card max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold">👤 Candidate Details</h2>
+                    <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="modalContent" class="p-6">
+                <!-- Modal content will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAl8eI-_8Ew9va0KPV8p4D2hc9WUTGiwuI",
+            authDomain: "chat-d647c.firebaseapp.com",
+            databaseURL: "https://chat-d647c-default-rtdb.firebaseio.com",
+            projectId: "chat-d647c",
+            storageBucket: "chat-d647c.firebasestorage.app",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:7248a0983dcf0d45a87418",
+            measurementId: "G-5RFLRYTLCN"
+        };
+
+        // Initialize Firebase
+        let db = null;
+        let auth = null;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            auth = firebase.auth();
+            console.log('✅ Firebase initialized successfully');
+        } catch (error) {
+            console.error('❌ Firebase initialization error:', error);
+        }
+
+        // Global variables
+        let allCandidates = [];
+        let selectedCandidates = [];
+        let currentUser = null;
+        let isAuthenticated = false;
+
+        // Admin Authentication
+        async function adminLogin() {
+            const email = document.getElementById('adminEmail').value.trim();
+            const password = document.getElementById('adminPassword').value;
+
+            // Validate admin credentials
+            if (email !== 'sgursharn076@gmail.com') {
+                showAlert('❌ Access Denied: You are not authorized to access this admin panel.', 'danger');
+                return;
+            }
+
+            if (password !== '7973804008') {
+                showAlert('❌ Invalid admin credentials. Access denied.', 'danger');
+                return;
+            }
+
+            if (!auth) {
+                showAlert('❌ Firebase Authentication not available. Please try again later.', 'danger');
+                return;
+            }
+
+            try {
+                showAlert('🔄 Authenticating admin access...', 'info');
+                
+                // Sign in with Firebase Auth
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+
+                showAlert('✅ Admin authentication successful!', 'success');
+                
+                currentUser = user;
+                isAuthenticated = true;
+                
+                // Show admin dashboard
+                setTimeout(() => {
+                    showAdminDashboard();
+                }, 1000);
+
+            } catch (error) {
+                console.error('Admin login error:', error);
+                let errorMessage = '❌ Admin login failed. ';
+                
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage += 'Admin account not found. Please contact system administrator.';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage += 'Invalid admin password.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage += 'Invalid email format.';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage += 'Too many failed attempts. Please try again later.';
+                        break;
+                    default:
+                        errorMessage += error.message;
+                }
+                
+                showAlert(errorMessage, 'danger');
+            }
+        }
+
+        function showAdminDashboard() {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.remove('hidden');
+            
+            // Update admin info
+            document.getElementById('adminUserEmail').textContent = currentUser.email;
+            updateDateTime();
+            
+            // Load admin data
+            loadAdminData();
+            
+            // Start real-time clock
+            setInterval(updateDateTime, 1000);
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            };
+            document.getElementById('currentDateTime').textContent = now.toLocaleDateString('en-US', options);
+        }
+
+        async function adminLogout() {
+            try {
+                if (auth) {
+                    await auth.signOut();
+                }
+                
+                isAuthenticated = false;
+                currentUser = null;
+                
+                showAlert('👋 Admin logged out successfully!', 'info');
+                
+                // Clear form and show auth screen
+                document.getElementById('adminEmail').value = '';
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('adminDashboard').classList.add('hidden');
+                document.getElementById('authScreen').classList.remove('hidden');
+                
+            } catch (error) {
+                console.error('Logout error:', error);
+                showAlert('❌ Error during logout. Please try again.', 'danger');
+            }
+        }
+
+        // Data Management Functions
+        async function loadAdminData() {
+            showAlert('🔄 Loading candidate data from Firebase...', 'info');
+            
+            // Show loading state
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+            
+            try {
+                const snapshot = await db.collection('candidates').orderBy('applicationDate', 'desc').get();
+                allCandidates = [];
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    // Convert Firestore timestamp to readable date
+                    if (data.applicationDate && data.applicationDate.toDate) {
+                        data.applicationDate = data.applicationDate.toDate();
+                        data.submitDate = data.applicationDate.toLocaleDateString();
+                    }
+                    allCandidates.push({ id: doc.id, ...data });
+                });
+                
+                console.log(`✅ Retrieved ${allCandidates.length} candidates from Firebase`);
+                
+                updateAdminStats();
+                displayCandidatesTable();
+                
+                // Hide loading state
+                document.getElementById('loadingState').classList.add('hidden');
+                
+                if (allCandidates.length === 0) {
+                    document.getElementById('emptyState').classList.remove('hidden');
+                } else {
+                    showAlert(`✅ Loaded ${allCandidates.length} applications successfully!`, 'success');
+                }
+                
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+                document.getElementById('loadingState').classList.add('hidden');
+                showAlert('❌ Error loading data from Firebase: ' + error.message, 'danger');
+            }
+        }
+
+        function updateAdminStats() {
+            const total = allCandidates.length;
+            const pending = allCandidates.filter(c => c.status === 'pending').length;
+            const approved = allCandidates.filter(c => c.status === 'approved' || c.status === 'interview_ready' || c.status === 'completed').length;
+            const rejected = allCandidates.filter(c => c.status === 'rejected').length;
+            
+            // Animate numbers
+            animateNumber('totalApplications', total);
+            animateNumber('pendingApplications', pending);
+            animateNumber('approvedApplications', approved);
+            animateNumber('rejectedApplications', rejected);
+        }
+
+        function animateNumber(elementId, targetNumber) {
+            const element = document.getElementById(elementId);
+            const startNumber = parseInt(element.textContent) || 0;
+            const duration = 1000;
+            const steps = 20;
+            const increment = (targetNumber - startNumber) / steps;
+            let currentNumber = startNumber;
+            
+            const timer = setInterval(() => {
+                currentNumber += increment;
+                if ((increment > 0 && currentNumber >= targetNumber) || (increment < 0 && currentNumber <= targetNumber)) {
+                    currentNumber = targetNumber;
+                    clearInterval(timer);
+                }
+                element.textContent = Math.round(currentNumber);
+            }, duration / steps);
+        }
+
+        function displayCandidatesTable() {
+            const tbody = document.getElementById('adminTableBody');
+            const searchTerm = document.getElementById('adminSearch').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            
+            let filteredCandidates = allCandidates;
+            
+            // Apply search filter
+            if (searchTerm) {
+                filteredCandidates = filteredCandidates.filter(candidate => 
+                    candidate.id.toLowerCase().includes(searchTerm) ||
+                    candidate.fullName.toLowerCase().includes(searchTerm) ||
+                    candidate.email.toLowerCase().includes(searchTerm) ||
+                    candidate.company.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // Apply status filter
+            if (statusFilter) {
+                filteredCandidates = filteredCandidates.filter(candidate => 
+                    candidate.status === statusFilter
+                );
+            }
+            
+            // Apply date filter
+            if (dateFilter) {
+                filteredCandidates = filteredCandidates.filter(candidate => {
+                    if (candidate.applicationDate) {
+                        const candidateDate = candidate.applicationDate.toISOString().split('T')[0];
+                        return candidateDate === dateFilter;
+                    }
+                    return false;
+                });
+            }
+            
+            tbody.innerHTML = '';
+            
+            if (filteredCandidates.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                            <div class="text-4xl mb-4">🔍</div>
+                            <p>No applications found matching your criteria.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            filteredCandidates.forEach((candidate, index) => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <input type="checkbox" class="candidate-checkbox" value="${candidate.id}">
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="font-mono text-sm font-medium text-gray-900">${candidate.id}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
+                                ${candidate.fullName.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">${candidate.fullName}</div>
+                                <div class="text-sm text-gray-500">${candidate.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${candidate.company}</div>
+                        <div class="text-sm text-gray-500">${candidate.position}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <div class="text-lg font-bold text-blue-600">${candidate.score}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="status-badge status-${candidate.status}">
+                            ${candidate.status.replace('_', ' ')}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${candidate.submitDate}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <div class="flex flex-wrap gap-1 justify-center">
+                            ${candidate.status === 'pending' ? `
+                                <button onclick="approveCandidate('${candidate.id}')" class="btn-success text-xs px-3 py-1">
+                                    ✅ Approve
+                                </button>
+                                <button onclick="rejectCandidate('${candidate.id}')" class="btn-danger text-xs px-3 py-1">
+                                    ❌ Reject
+                                </button>
+                            ` : ''}
+                            <button onclick="viewCandidate('${candidate.id}')" class="btn-primary text-xs px-3 py-1">
+                                👁️ View
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // Add event listeners for checkboxes
+            document.querySelectorAll('.candidate-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', updateSelectedCandidates);
+            });
+        }
+
+        function updateSelectedCandidates() {
+            selectedCandidates = Array.from(document.querySelectorAll('.candidate-checkbox:checked'))
+                .map(checkbox => checkbox.value);
+            
+            // Update select all checkbox
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const allCheckboxes = document.querySelectorAll('.candidate-checkbox');
+            
+            if (selectedCandidates.length === 0) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = false;
+            } else if (selectedCandidates.length === allCheckboxes.length) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = true;
+            } else {
+                selectAllCheckbox.indeterminate = true;
+            }
+        }
+
+        function toggleSelectAll() {
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const allCheckboxes = document.querySelectorAll('.candidate-checkbox');
+            
+            allCheckboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+            
+            updateSelectedCandidates();
+        }
+
+        // Candidate Actions
+        async function approveCandidate(candidateId) {
+            if (!confirm('Are you sure you want to approve this candidate?')) return;
+            
+            showAlert('🔄 Approving candidate...', 'info');
+            
+            try {
+                const updateData = {
+                    status: 'approved',
+                    approvedAt: firebase.firestore.Timestamp.now(),
+                    approvedBy: currentUser.email
+                };
+                
+                await db.collection('candidates').doc(candidateId).update(updateData);
+                
+                // Update local data
+                const candidate = allCandidates.find(c => c.id === candidateId);
+                if (candidate) {
+                    candidate.status = 'approved';
+                    candidate.approvedAt = new Date();
+                    candidate.approvedBy = currentUser.email;
+                }
+                
+                updateAdminStats();
+                displayCandidatesTable();
+                showAlert('✅ Candidate approved successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error approving candidate:', error);
+                showAlert('❌ Error approving candidate: ' + error.message, 'danger');
+            }
+        }
+
+        async function rejectCandidate(candidateId) {
+            const reason = prompt('Enter rejection reason (optional):');
+            if (reason === null) return; // User cancelled
+            
+            showAlert('🔄 Rejecting candidate...', 'info');
+            
+            try {
+                const updateData = {
+                    status: 'rejected',
+                    rejectedAt: firebase.firestore.Timestamp.now(),
+                    rejectedBy: currentUser.email,
+                    rejectionReason: reason || 'Did not meet minimum requirements'
+                };
+                
+                await db.collection('candidates').doc(candidateId).update(updateData);
+                
+                // Update local data
+                const candidate = allCandidates.find(c => c.id === candidateId);
+                if (candidate) {
+                    candidate.status = 'rejected';
+                    candidate.rejectedAt = new Date();
+                    candidate.rejectedBy = currentUser.email;
+                    candidate.rejectionReason = reason || 'Did not meet minimum requirements';
+                }
+                
+                updateAdminStats();
+                displayCandidatesTable();
+                showAlert('❌ Candidate rejected successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error rejecting candidate:', error);
+                showAlert('❌ Error rejecting candidate: ' + error.message, 'danger');
+            }
+        }
+
+        function viewCandidate(candidateId) {
+            const candidate = allCandidates.find(c => c.id === candidateId);
+            if (!candidate) return;
+            
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = `
+                <div class="space-y-6">
+                    <!-- Basic Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-3">
+                            <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">📋 Basic Information</h3>
+                            <div><strong>Application ID:</strong> <span class="font-mono text-blue-600">${candidate.id}</span></div>
+                            <div><strong>Full Name:</strong> ${candidate.fullName}</div>
+                            <div><strong>Email:</strong> ${candidate.email}</div>
+                            <div><strong>Phone:</strong> ${candidate.phone || 'Not provided'}</div>
+                            <div><strong>Country:</strong> ${candidate.country}</div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">🏢 Professional Details</h3>
+                            <div><strong>Company:</strong> ${candidate.company}</div>
+                            <div><strong>Position:</strong> ${candidate.position}</div>
+                            <div><strong>Experience:</strong> ${candidate.experience}</div>
+                            <div><strong>Assessment Level:</strong> ${candidate.level}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Assessment Results -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">📊 Assessment Results</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-600">${candidate.score}</div>
+                                <div class="text-sm text-gray-600">Assessment Score</div>
+                            </div>
+                            ${candidate.interviewScore ? `
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold text-purple-600">${candidate.interviewScore}</div>
+                                    <div class="text-sm text-gray-600">Interview Score</div>
+                                </div>
+                            ` : ''}
+                            <div class="text-center">
+                                <div class="status-badge status-${candidate.status}">${candidate.status.replace('_', ' ')}</div>
+                                <div class="text-sm text-gray-600 mt-1">Current Status</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Timeline -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">📅 Application Timeline</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center text-sm">
+                                <div class="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                                <span><strong>Submitted:</strong> ${candidate.submitDate}</span>
+                            </div>
+                            ${candidate.approvedBy ? `
+                                <div class="flex items-center text-sm">
+                                    <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                    <span><strong>Approved by:</strong> ${candidate.approvedBy}</span>
+                                </div>
+                            ` : ''}
+                            ${candidate.rejectedBy ? `
+                                <div class="flex items-center text-sm">
+                                    <div class="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
+                                    <span><strong>Rejected by:</strong> ${candidate.rejectedBy}</span>
+                                </div>
+                            ` : ''}
+                            ${candidate.allotmentNumber ? `
+                                <div class="flex items-center text-sm">
+                                    <div class="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
+                                    <span><strong>Allotment Number:</strong> ${candidate.allotmentNumber}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    ${candidate.rejectionReason ? `
+                        <div class="bg-red-50 p-4 rounded-lg border border-red-200">
+                            <h4 class="font-semibold text-red-800 mb-2">❌ Rejection Reason</h4>
+                            <p class="text-red-700">${candidate.rejectionReason}</p>
+                        </div>
+                    ` : ''}
+                    
+                    ${candidate.finalStatus ? `
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <h4 class="font-semibold text-blue-800 mb-2">🏆 Final Status</h4>
+                            <p class="text-blue-700">${candidate.finalStatus}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            document.getElementById('candidateModal').classList.remove('hidden');
+            document.getElementById('candidateModal').classList.add('flex');
+        }
+
+        function closeModal() {
+            document.getElementById('candidateModal').classList.add('hidden');
+            document.getElementById('candidateModal').classList.remove('flex');
+        }
+
+        // Bulk Actions
+        async function bulkApprove() {
+            if (selectedCandidates.length === 0) {
+                showAlert('⚠️ Please select candidates to approve', 'warning');
+                return;
+            }
+            
+            if (!confirm(`Approve ${selectedCandidates.length} selected candidates?`)) return;
+            
+            showAlert('🔄 Bulk approving candidates...', 'info');
+            
+            try {
+                const batch = db.batch();
+                
+                selectedCandidates.forEach(candidateId => {
+                    const docRef = db.collection('candidates').doc(candidateId);
+                    batch.update(docRef, {
+                        status: 'approved',
+                        approvedAt: firebase.firestore.Timestamp.now(),
+                        approvedBy: currentUser.email
+                    });
+                });
+                
+                await batch.commit();
+                
+                // Update local data
+                selectedCandidates.forEach(candidateId => {
+                    const candidate = allCandidates.find(c => c.id === candidateId);
+                    if (candidate) {
+                        candidate.status = 'approved';
+                        candidate.approvedAt = new Date();
+                        candidate.approvedBy = currentUser.email;
+                    }
+                });
+                
+                selectedCandidates = [];
+                updateAdminStats();
+                displayCandidatesTable();
+                showAlert(`✅ ${selectedCandidates.length} candidates approved successfully!`, 'success');
+                
+            } catch (error) {
+                console.error('Error bulk approving:', error);
+                showAlert('❌ Error during bulk approval: ' + error.message, 'danger');
+            }
+        }
+
+        async function bulkReject() {
+            if (selectedCandidates.length === 0) {
+                showAlert('⚠️ Please select candidates to reject', 'warning');
+                return;
+            }
+            
+            const reason = prompt('Enter rejection reason for all selected candidates:');
+            if (reason === null) return;
+            
+            if (!confirm(`Reject ${selectedCandidates.length} selected candidates?`)) return;
+            
+            showAlert('🔄 Bulk rejecting candidates...', 'info');
+            
+            try {
+                const batch = db.batch();
+                
+                selectedCandidates.forEach(candidateId => {
+                    const docRef = db.collection('candidates').doc(candidateId);
+                    batch.update(docRef, {
+                        status: 'rejected',
+                        rejectedAt: firebase.firestore.Timestamp.now(),
+                        rejectedBy: currentUser.email,
+                        rejectionReason: reason || 'Did not meet minimum requirements'
+                    });
+                });
+                
+                await batch.commit();
+                
+                // Update local data
+                selectedCandidates.forEach(candidateId => {
+                    const candidate = allCandidates.find(c => c.id === candidateId);
+                    if (candidate) {
+                        candidate.status = 'rejected';
+                        candidate.rejectedAt = new Date();
+                        candidate.rejectedBy = currentUser.email;
+                        candidate.rejectionReason = reason || 'Did not meet minimum requirements';
+                    }
+                });
+                
+                selectedCandidates = [];
+                updateAdminStats();
+                displayCandidatesTable();
+                showAlert(`❌ ${selectedCandidates.length} candidates rejected successfully!`, 'success');
+                
+            } catch (error) {
+                console.error('Error bulk rejecting:', error);
+                showAlert('❌ Error during bulk rejection: ' + error.message, 'danger');
+            }
+        }
+
+        // Export Functions
+        function exportData() {
+            if (allCandidates.length === 0) {
+                showAlert('⚠️ No data to export', 'warning');
+                return;
+            }
+            
+            const csvContent = [
+                'Application ID,Full Name,Email,Company,Position,Country,Experience,Score,Status,Submit Date,Approved By,Rejected By,Rejection Reason,Interview Score,Final Status',
+                ...allCandidates.map(candidate => [
+                    candidate.id,
+                    candidate.fullName,
+                    candidate.email,
+                    candidate.company,
+                    candidate.position,
+                    candidate.country,
+                    candidate.experience,
+                    candidate.score,
+                    candidate.status,
+                    candidate.submitDate,
+                    candidate.approvedBy || '',
+                    candidate.rejectedBy || '',
+                    candidate.rejectionReason || '',
+                    candidate.interviewScore || '',
+                    candidate.finalStatus || ''
+                ].map(field => `"${field}"`).join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `WebOrion_Admin_Export_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showAlert('📊 Data exported successfully!', 'success');
+        }
+
+        function generateReport() {
+            if (allCandidates.length === 0) {
+                showAlert('⚠️ No data available for report generation', 'warning');
+                return;
+            }
+            
+            const total = allCandidates.length;
+            const pending = allCandidates.filter(c => c.status === 'pending').length;
+            const approved = allCandidates.filter(c => c.status === 'approved' || c.status === 'interview_ready' || c.status === 'completed').length;
+            const rejected = allCandidates.filter(c => c.status === 'rejected').length;
+            
+            const approvalRate = ((approved / total) * 100).toFixed(1);
+            const rejectionRate = ((rejected / total) * 100).toFixed(1);
+            
+            const reportContent = `
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                        WEB ORION+ ADMIN ANALYTICS REPORT                     ║
+║                              Generated: ${new Date().toLocaleString()}                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+📊 SUMMARY STATISTICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📈 Total Applications:        ${total}
+⏳ Pending Review:           ${pending} (${((pending/total)*100).toFixed(1)}%)
+✅ Approved:                 ${approved} (${approvalRate}%)
+❌ Rejected:                 ${rejected} (${rejectionRate}%)
+
+🎯 PERFORMANCE METRICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 Approval Rate:            ${approvalRate}%
+📉 Rejection Rate:           ${rejectionRate}%
+⚡ Processing Efficiency:    ${((total-pending)/total*100).toFixed(1)}%
+
+🏆 TOP PERFORMING CANDIDATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${allCandidates
+    .filter(c => c.status === 'approved' || c.status === 'completed')
+    .sort((a, b) => parseInt(b.score) - parseInt(a.score))
+    .slice(0, 5)
+    .map((candidate, index) => 
+        `${index + 1}. ${candidate.fullName} - ${candidate.score} (${candidate.company})`
+    ).join('\n')}
+
+📅 RECENT ACTIVITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${allCandidates
+    .sort((a, b) => new Date(b.applicationDate) - new Date(a.applicationDate))
+    .slice(0, 10)
+    .map(candidate => 
+        `• ${candidate.submitDate} - ${candidate.fullName} (${candidate.status.toUpperCase()})`
+    ).join('\n')}
+
+🔒 REPORT AUTHENTICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+👤 Generated by:             ${currentUser.email}
+🕒 Report Date:              ${new Date().toLocaleString()}
+🔐 Security Hash:            WO-ADMIN-${Date.now().toString(36).toUpperCase()}
+🌐 Platform:                 Web Orion+ Admin Panel
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    © 2024 Web Orion+ Business Intelligence Platform
+                           Confidential Admin Report - Authorized Personnel Only
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            `;
+            
+            const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `WebOrion_Admin_Report_${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showAlert('📈 Analytics report generated successfully!', 'success');
+        }
+
+        // Utility Functions
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} fixed top-4 right-4 z-50 max-w-md fade-in`;
+            alertDiv.innerHTML = message;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Search and filter event listeners
+            const searchInput = document.getElementById('adminSearch');
+            const statusFilter = document.getElementById('statusFilter');
+            const dateFilter = document.getElementById('dateFilter');
+            
+            if (searchInput) {
+                searchInput.addEventListener('input', displayCandidatesTable);
+            }
+            if (statusFilter) {
+                statusFilter.addEventListener('change', displayCandidatesTable);
+            }
+            if (dateFilter) {
+                dateFilter.addEventListener('change', displayCandidatesTable);
+            }
+            
+            // Enter key login
+            document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    adminLogin();
+                }
+            });
+            
+            // Close modal on outside click
+            document.getElementById('candidateModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+        });
+
+        // Initialize
+        window.onload = function() {
+            // Show auth screen initially
+            document.getElementById('authScreen').classList.remove('hidden');
+            
+            // Show connection status
+            setTimeout(() => {
+                if (db && auth) {
+                    showAlert('🔥 Firebase Admin Panel connected successfully!', 'success');
+                } else {
+                    showAlert('⚠️ Firebase connection unavailable - some features may be limited', 'warning');
+                }
+            }, 1000);
+        };
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967ecd2f73c35989',t:'MTc1Mzk4Mjc5NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
