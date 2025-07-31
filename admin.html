@@ -541,14 +541,6 @@
 
         // Admin Authentication
         async function adminLogin() {
-            const email = document.getElementById('adminEmail').value.trim();
-            const password = document.getElementById('adminPassword').value;
-
-    if (email === 'sgursharn07@gmail.com' && password === 'any') {
-    showAlert('✅ Admin authentication successful!', 'success');
-    
-    currentUser = { email: email };
-    isAuthenticated = true;
     
     // Show admin dashboard
     setTimeout(() => {
