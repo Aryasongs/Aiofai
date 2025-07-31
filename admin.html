@@ -544,20 +544,18 @@
             const email = document.getElementById('adminEmail').value.trim();
             const password = document.getElementById('adminPassword').value;
 
-            // Check if admin credentials
-            if (email === 'sgursharn07@gmail.com' && password === 'any') {
-                showAlert('✅ Admin authentication successful!', 'success');
-                
-                currentUser = { email: email };
-                isAuthenticated = true;
-                
-                // Show admin dashboard
-                setTimeout(() => {
-                    showAdminDashboard();
-                }, 1000);
-                return;
-            }
-
+    if (email === 'sgursharn07@gmail.com' && password === 'any') {
+    showAlert('✅ Admin authentication successful!', 'success');
+    
+    currentUser = { email: email };
+    isAuthenticated = true;
+    
+    // Show admin dashboard
+    setTimeout(() => {
+        showAdminDashboard();
+    }, 1000);
+    return;
+}
             // For normal users, redirect to main application
             if (email && password) {
                 showAlert('✅ User authentication successful! Redirecting to application...', 'success');
