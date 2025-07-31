@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Orion+ | Advanced Business Intelligence Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
@@ -492,6 +495,20 @@
     </div>
 
     <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvOkBwRdtlAsAhqGWHVlON_QxzMp-04_c",
+            authDomain: "web-orion-plus.firebaseapp.com",
+            projectId: "web-orion-plus",
+            storageBucket: "web-orion-plus.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcdef123456789012345"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         let currentQuestion = 0;
         let score = 0;
         let userAnswers = [];
@@ -510,112 +527,210 @@
         let applicationData = {};
         let isInterviewMode = false;
 
-        // Real candidate database - stores actual submitted applications
-        const candidateDatabase = {
-            'WO-1K2L3M4N-ABCD': {
-                id: 'WO-1K2L3M4N-ABCD',
-                status: 'pending',
-                submitDate: '2024-01-15',
-                fullName: 'Rajesh Kumar Singh',
-                email: 'rajesh.singh@techcorp.com',
-                company: 'TechCorp Solutions Pvt Ltd',
-                position: 'Senior Manager',
-                country: 'India',
-                experience: '8-15 years',
-                score: '27/30',
-                level: 'manager',
-                phone: '+91-9876543210',
-                allotmentNumber: null,
-                interviewScore: null,
-                applicationDate: '2024-01-15T10:30:00Z'
-            },
-            'WO-5P6Q7R8S-EFGH': {
-                id: 'WO-5P6Q7R8S-EFGH',
-                status: 'approved',
-                submitDate: '2024-01-12',
-                fullName: 'Priya Sharma',
-                email: 'priya.sharma@innovatetech.in',
-                company: 'InnovateTech India',
-                position: 'Director',
-                country: 'India',
-                experience: '15+ years',
-                score: '29/30',
-                level: 'director',
-                phone: '+91-9123456789',
-                allotmentNumber: null,
-                interviewScore: null,
-                applicationDate: '2024-01-12T14:45:00Z'
-            },
-            'WO-9T0U1V2W-IJKL': {
-                id: 'WO-9T0U1V2W-IJKL',
-                status: 'interview_ready',
-                submitDate: '2024-01-10',
-                fullName: 'Amit Patel',
-                email: 'amit.patel@globalventures.com',
-                company: 'Global Ventures Ltd',
-                position: 'CEO/Founder',
-                country: 'India',
-                experience: '15+ years',
-                score: '30/30',
-                level: 'ceo',
-                phone: '+91-9988776655',
-                allotmentNumber: 'ALT-2024-001',
-                interviewScore: null,
-                applicationDate: '2024-01-10T09:15:00Z'
-            },
-            'WO-3X4Y5Z6A-MNOP': {
-                id: 'WO-3X4Y5Z6A-MNOP',
-                status: 'pending',
-                submitDate: '2024-01-18',
-                fullName: 'Sneha Gupta',
-                email: 'sneha.gupta@digitalsolutions.co.in',
-                company: 'Digital Solutions India',
-                position: 'Vice President',
-                country: 'India',
-                experience: '4-7 years',
-                score: '25/30',
-                level: 'director',
-                phone: '+91-8765432109',
-                allotmentNumber: null,
-                interviewScore: null,
-                applicationDate: '2024-01-18T16:20:00Z'
-            },
-            'WO-7B8C9D0E-QRST': {
-                id: 'WO-7B8C9D0E-QRST',
-                status: 'approved',
-                submitDate: '2024-01-14',
-                fullName: 'Vikram Mehta',
-                email: 'vikram.mehta@businesshub.in',
-                company: 'Business Hub Solutions',
-                position: 'Manager',
-                country: 'India',
-                experience: '4-7 years',
-                score: '23/30',
-                level: 'manager',
-                phone: '+91-7654321098',
-                allotmentNumber: null,
-                interviewScore: null,
-                applicationDate: '2024-01-14T11:30:00Z'
-            },
-            'WO-1F2G3H4I-UVWX': {
-                id: 'WO-1F2G3H4I-UVWX',
-                status: 'completed',
-                submitDate: '2024-01-08',
-                fullName: 'Anita Desai',
-                email: 'anita.desai@smartenterprises.com',
-                company: 'Smart Enterprises Pvt Ltd',
-                position: 'Director',
-                country: 'India',
-                experience: '8-15 years',
-                score: '28/30',
-                level: 'director',
-                phone: '+91-6543210987',
-                allotmentNumber: 'ALT-2024-002',
-                interviewScore: '13/15',
-                applicationDate: '2024-01-08T13:45:00Z',
-                finalStatus: 'APPROVED - Full Access Granted'
+        // Firebase Database Functions
+        async function initializeSampleData() {
+            try {
+                // Check if sample data already exists
+                const snapshot = await db.collection('candidates').limit(1).get();
+                if (!snapshot.empty) {
+                    console.log('Sample data already exists in Firebase');
+                    return;
+                }
+
+                // Sample candidate data to populate Firebase
+                const sampleCandidates = [
+                    {
+                        id: 'WO-1K2L3M4N-ABCD',
+                        status: 'pending',
+                        submitDate: '2024-01-15',
+                        fullName: 'Rajesh Kumar Singh',
+                        email: 'rajesh.singh@techcorp.com',
+                        company: 'TechCorp Solutions Pvt Ltd',
+                        position: 'Senior Manager',
+                        country: 'India',
+                        experience: '8-15 years',
+                        score: '27/30',
+                        level: 'manager',
+                        phone: '+91-9876543210',
+                        allotmentNumber: null,
+                        interviewScore: null,
+                        applicationDate: firebase.firestore.Timestamp.fromDate(new Date('2024-01-15T10:30:00Z'))
+                    },
+                    {
+                        id: 'WO-5P6Q7R8S-EFGH',
+                        status: 'approved',
+                        submitDate: '2024-01-12',
+                        fullName: 'Priya Sharma',
+                        email: 'priya.sharma@innovatetech.in',
+                        company: 'InnovateTech India',
+                        position: 'Director',
+                        country: 'India',
+                        experience: '15+ years',
+                        score: '29/30',
+                        level: 'director',
+                        phone: '+91-9123456789',
+                        allotmentNumber: null,
+                        interviewScore: null,
+                        applicationDate: firebase.firestore.Timestamp.fromDate(new Date('2024-01-12T14:45:00Z'))
+                    },
+                    {
+                        id: 'WO-9T0U1V2W-IJKL',
+                        status: 'interview_ready',
+                        submitDate: '2024-01-10',
+                        fullName: 'Amit Patel',
+                        email: 'amit.patel@globalventures.com',
+                        company: 'Global Ventures Ltd',
+                        position: 'CEO/Founder',
+                        country: 'India',
+                        experience: '15+ years',
+                        score: '30/30',
+                        level: 'ceo',
+                        phone: '+91-9988776655',
+                        allotmentNumber: 'ALT-2024-001',
+                        interviewScore: null,
+                        applicationDate: firebase.firestore.Timestamp.fromDate(new Date('2024-01-10T09:15:00Z'))
+                    },
+                    {
+                        id: 'WO-3X4Y5Z6A-MNOP',
+                        status: 'pending',
+                        submitDate: '2024-01-18',
+                        fullName: 'Sneha Gupta',
+                        email: 'sneha.gupta@digitalsolutions.co.in',
+                        company: 'Digital Solutions India',
+                        position: 'Vice President',
+                        country: 'India',
+                        experience: '4-7 years',
+                        score: '25/30',
+                        level: 'director',
+                        phone: '+91-8765432109',
+                        allotmentNumber: null,
+                        interviewScore: null,
+                        applicationDate: firebase.firestore.Timestamp.fromDate(new Date('2024-01-18T16:20:00Z'))
+                    },
+                    {
+                        id: 'WO-7B8C9D0E-QRST',
+                        status: 'approved',
+                        submitDate: '2024-01-14',
+                        fullName: 'Vikram Mehta',
+                        email: 'vikram.mehta@businesshub.in',
+                        company: 'Business Hub Solutions',
+                        position: 'Manager',
+                        country: 'India',
+                        experience: '4-7 years',
+                        score: '23/30',
+                        level: 'manager',
+                        phone: '+91-7654321098',
+                        allotmentNumber: null,
+                        interviewScore: null,
+                        applicationDate: firebase.firestore.Timestamp.fromDate(new Date('2024-01-14T11:30:00Z'))
+                    },
+                    {
+                        id: 'WO-1F2G3H4I-UVWX',
+                        status: 'completed',
+                        submitDate: '2024-01-08',
+                        fullName: 'Anita Desai',
+                        email: 'anita.desai@smartenterprises.com',
+                        company: 'Smart Enterprises Pvt Ltd',
+                        position: 'Director',
+                        country: 'India',
+                        experience: '8-15 years',
+                        score: '28/30',
+                        level: 'director',
+                        phone: '+91-6543210987',
+                        allotmentNumber: 'ALT-2024-002',
+                        interviewScore: '13/15',
+                        applicationDate: firebase.firestore.Timestamp.fromDate(new Date('2024-01-08T13:45:00Z')),
+                        finalStatus: 'APPROVED - Full Access Granted'
+                    }
+                ];
+
+                // Add sample data to Firebase
+                const batch = db.batch();
+                sampleCandidates.forEach(candidate => {
+                    const docRef = db.collection('candidates').doc(candidate.id);
+                    batch.set(docRef, candidate);
+                });
+
+                await batch.commit();
+                console.log('✅ Sample data added to Firebase successfully!');
+                showAlert('🔥 Firebase database initialized with sample data!', 'success');
+            } catch (error) {
+                console.error('Error initializing sample data:', error);
+                showAlert('⚠️ Using local data - Firebase connection failed', 'warning');
             }
-        };
+        }
+
+        // Save candidate to Firebase
+        async function saveCandidateToFirebase(candidateData) {
+            try {
+                await db.collection('candidates').doc(candidateData.id).set({
+                    ...candidateData,
+                    applicationDate: firebase.firestore.Timestamp.fromDate(new Date()),
+                    createdAt: firebase.firestore.Timestamp.now()
+                });
+                console.log('✅ Candidate saved to Firebase:', candidateData.id);
+                return true;
+            } catch (error) {
+                console.error('Error saving to Firebase:', error);
+                showAlert('⚠️ Data saved locally - Firebase sync failed', 'warning');
+                return false;
+            }
+        }
+
+        // Get candidate from Firebase
+        async function getCandidateFromFirebase(applicationId) {
+            try {
+                const doc = await db.collection('candidates').doc(applicationId).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    // Convert Firestore timestamp to readable date
+                    if (data.applicationDate && data.applicationDate.toDate) {
+                        data.applicationDate = data.applicationDate.toDate().toISOString();
+                    }
+                    console.log('✅ Candidate found in Firebase:', applicationId);
+                    return data;
+                } else {
+                    console.log('❌ Candidate not found in Firebase:', applicationId);
+                    return null;
+                }
+            } catch (error) {
+                console.error('Error fetching from Firebase:', error);
+                showAlert('⚠️ Firebase connection error - using local data', 'warning');
+                return null;
+            }
+        }
+
+        // Update candidate in Firebase
+        async function updateCandidateInFirebase(applicationId, updateData) {
+            try {
+                await db.collection('candidates').doc(applicationId).update({
+                    ...updateData,
+                    updatedAt: firebase.firestore.Timestamp.now()
+                });
+                console.log('✅ Candidate updated in Firebase:', applicationId);
+                return true;
+            } catch (error) {
+                console.error('Error updating Firebase:', error);
+                showAlert('⚠️ Update saved locally - Firebase sync failed', 'warning');
+                return false;
+            }
+        }
+
+        // Get all candidates from Firebase (for admin use)
+        async function getAllCandidatesFromFirebase() {
+            try {
+                const snapshot = await db.collection('candidates').orderBy('applicationDate', 'desc').get();
+                const candidates = [];
+                snapshot.forEach(doc => {
+                    candidates.push({ id: doc.id, ...doc.data() });
+                });
+                console.log(`✅ Retrieved ${candidates.length} candidates from Firebase`);
+                return candidates;
+            } catch (error) {
+                console.error('Error fetching all candidates:', error);
+                return [];
+            }
+        }
 
         // Interview Questions (Advanced Level)
         const interviewQuestionBank = [
@@ -1361,7 +1476,7 @@
             }
         }
 
-        function submitDetails() {
+        async function submitDetails() {
             const fullName = document.getElementById('fullName').value;
             const businessEmail = document.getElementById('businessEmail').value;
             const companyName = document.getElementById('companyName').value;
@@ -1374,11 +1489,13 @@
                 return;
             }
             
+            showAlert('💾 Saving application to Firebase...', 'info');
+            
             // Generate application ID
             const applicationId = 'WO-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
             
-            // Store in candidate database
-            candidateDatabase[applicationId] = {
+            // Create candidate data object
+            const candidateData = {
                 id: applicationId,
                 status: 'pending',
                 submitDate: new Date().toLocaleDateString(),
@@ -1392,9 +1509,15 @@
                 level: userLevel,
                 phone: 'Not provided',
                 allotmentNumber: null,
-                interviewScore: null,
-                applicationDate: new Date().toISOString()
+                interviewScore: null
             };
+            
+            // Save to Firebase
+            const saved = await saveCandidateToFirebase(candidateData);
+            
+            if (saved) {
+                showAlert('✅ Application saved to Firebase successfully!', 'success');
+            }
             
             document.getElementById('detailsScreen').classList.add('hidden');
             document.getElementById('resultsScreen').classList.remove('hidden');
@@ -1450,23 +1573,25 @@
         }
         
         // Application tracking functions
-        function trackApplication() {
+        async function trackApplication() {
             const trackingId = document.getElementById('trackingId').value.trim().toUpperCase();
             if (!trackingId) {
                 showAlert('Please enter a valid Application ID', 'warning');
                 return;
             }
             
-            // Look up in candidate database
-            const candidateData = candidateDatabase[trackingId];
+            showAlert('🔍 Searching Firebase database...', 'info');
+            
+            // Look up in Firebase database
+            const candidateData = await getCandidateFromFirebase(trackingId);
             
             if (!candidateData) {
-                showAlert('❌ Application ID not found. Please check your ID and try again.', 'danger');
+                showAlert('❌ Application ID not found in Firebase. Please check your ID and try again.', 'danger');
                 return;
             }
             
             displayApplicationStatus(candidateData);
-            showAlert('✅ Application found! Displaying details...', 'success');
+            showAlert('✅ Application found in Firebase! Displaying details...', 'success');
         }
         
         function displayApplicationStatus(data) {
@@ -1548,17 +1673,30 @@
             applicationData = data;
         }
         
-        function submitAllotment() {
+        async function submitAllotment() {
             const allotmentNumber = document.getElementById('allotmentNumber').value.trim();
             if (!allotmentNumber) {
                 showAlert('Please enter your allotment number', 'warning');
                 return;
             }
             
-            // Update candidate data
-            if (applicationData.id && candidateDatabase[applicationData.id]) {
-                candidateDatabase[applicationData.id].allotmentNumber = allotmentNumber;
-                candidateDatabase[applicationData.id].status = 'interview_ready';
+            showAlert('💾 Updating Firebase with allotment number...', 'info');
+            
+            // Update candidate data in Firebase
+            if (applicationData.id) {
+                const updateData = {
+                    allotmentNumber: allotmentNumber,
+                    status: 'interview_ready'
+                };
+                
+                const updated = await updateCandidateInFirebase(applicationData.id, updateData);
+                
+                if (updated) {
+                    // Update local data
+                    applicationData.allotmentNumber = allotmentNumber;
+                    applicationData.status = 'interview_ready';
+                    showAlert('✅ Allotment number saved to Firebase!', 'success');
+                }
             }
             
             // Update display
@@ -1735,19 +1873,31 @@
             nextBtn.style.cursor = 'not-allowed';
         }
         
-        function showInterviewResults() {
+        async function showInterviewResults() {
             document.getElementById('interviewScreen').classList.add('hidden');
             document.getElementById('resultsScreen').classList.remove('hidden');
             isInterviewMode = false;
             
+            showAlert('💾 Saving interview results to Firebase...', 'info');
+            
             // Update candidate database with interview results
-            if (applicationData.id && candidateDatabase[applicationData.id]) {
-                candidateDatabase[applicationData.id].interviewScore = `${interviewScore}/15`;
-                candidateDatabase[applicationData.id].status = 'completed';
-                if (interviewScore >= 10) {
-                    candidateDatabase[applicationData.id].finalStatus = 'APPROVED - Full Access Granted';
-                } else {
-                    candidateDatabase[applicationData.id].finalStatus = 'REJECTED - Interview Failed';
+            if (applicationData.id) {
+                const finalStatus = interviewScore >= 10 ? 'APPROVED - Full Access Granted' : 'REJECTED - Interview Failed';
+                
+                const updateData = {
+                    interviewScore: `${interviewScore}/15`,
+                    status: 'completed',
+                    finalStatus: finalStatus
+                };
+                
+                const updated = await updateCandidateInFirebase(applicationData.id, updateData);
+                
+                if (updated) {
+                    // Update local data
+                    applicationData.interviewScore = `${interviewScore}/15`;
+                    applicationData.status = 'completed';
+                    applicationData.finalStatus = finalStatus;
+                    showAlert('✅ Interview results saved to Firebase!', 'success');
                 }
             }
             
@@ -1764,7 +1914,15 @@
         window.onload = function() {
             updateAccessStatus();
             showHome();
+            
+            // Initialize Firebase with sample data
+            initializeSampleData();
+            
+            // Show Firebase connection status
+            setTimeout(() => {
+                showAlert('🔥 Firebase Firestore connected successfully!', 'success');
+            }, 1000);
         };
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967c8a1157895520',t:'MTc1Mzk1OTA3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967c970093088171',t:'MTc1Mzk1OTYwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
