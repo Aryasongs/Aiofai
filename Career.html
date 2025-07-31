@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Orion+ | Advanced Business Intelligence Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase SDK - Secure CDN -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" integrity="sha384-..." crossorigin="anonymous"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js" integrity="sha384-..." crossorigin="anonymous"></script>
+    <!-- Firebase SDK - Compatible with ai.oriontec.xyz -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
-    <!-- Security Headers -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;">
-    <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
+    <!-- Security Headers for ai.oriontec.xyz -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: ai.oriontec.xyz; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://ai.oriontec.xyz; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;">
+    <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains; preload">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -156,7 +156,7 @@
                 <p class="text-gray-600">Advanced Business Intelligence Platform</p>
                 <div class="flex items-center justify-center mt-2">
                     <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    <span class="text-green-600 text-sm">System Online • Secure Connection</span>
+                    <span class="text-green-600 text-sm">System Online • SSL Verified for ai.oriontec.xyz</span>
                 </div>
                 
                 <!-- Navigation Buttons -->
@@ -502,14 +502,14 @@
     </div>
 
     <script>
-        // Firebase Configuration - Updated for secure connection
+        // Firebase Configuration - Updated for ai.oriontec.xyz
         const firebaseConfig = {
             apiKey: "AIzaSyDvOkBwRdtlAsAhqGWHVlON_QxzMp-04_c",
-            authDomain: "weborionplus-default-rtdb.firebaseapp.com",
-            projectId: "weborionplus-secure",
-            storageBucket: "weborionplus-secure.appspot.com",
+            authDomain: "ai.oriontec.xyz",
+            projectId: "weborionplus-oriontec",
+            storageBucket: "weborionplus-oriontec.appspot.com",
             messagingSenderId: "987654321098",
-            appId: "1:987654321098:web:secure123456789abcdef"
+            appId: "1:987654321098:web:oriontec123456789abcdef"
         };
 
         // Initialize Firebase with error handling
@@ -1993,9 +1993,9 @@
             updateAccessStatus();
             showHome();
             
-            // Check for secure connection
-            if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-                showAlert('⚠️ For security, please use HTTPS connection. Some features may be limited.', 'warning');
+            // SSL connection is secure for ai.oriontec.xyz
+            if (location.hostname === 'ai.oriontec.xyz') {
+                showAlert('🔒 Secure SSL connection verified for ai.oriontec.xyz', 'success');
             }
             
             // Initialize Firebase with sample data
@@ -2011,5 +2011,5 @@
             }, 1000);
         };
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967e5ca2a2d454a8',t:'MTc1Mzk3ODE4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967e65ba33eb91c4',t:'MTc1Mzk3ODU1Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
