@@ -148,10 +148,116 @@
                     <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                     <span class="text-green-600 text-sm">System Online • Secure Connection</span>
                 </div>
+                
+                <!-- Navigation Buttons -->
+                <div class="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4 mt-4">
+                    <button onclick="showHome()" class="btn-primary">🏠 New Application</button>
+                    <button onclick="showTracker()" class="btn-secondary">📋 Track Application</button>
+                </div>
             </div>
 
             <!-- Main Container -->
             <div class="card p-6 md:p-8">
+                <!-- Application Tracker Screen -->
+                <div id="trackerScreen" class="hidden">
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-bold mb-4">Track Your Application</h2>
+                        <p class="text-gray-600">Enter your Application ID to check status</p>
+                    </div>
+                    
+                    <div class="max-w-md mx-auto mb-6">
+                        <label class="block text-sm font-medium mb-2">Application ID</label>
+                        <div class="flex space-x-2">
+                            <input type="text" id="trackingId" class="form-control" placeholder="WO-XXXXXXX-XXXX">
+                            <button onclick="trackApplication()" class="btn-primary">Track</button>
+                        </div>
+                    </div>
+                    
+                    <div id="trackingResult" class="hidden">
+                        <!-- Application Status -->
+                        <div class="card p-6 mb-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-bold">Application Status</h3>
+                                <span id="statusBadge" class="px-3 py-1 rounded text-sm font-medium"></span>
+                            </div>
+                            
+                            <!-- Progress Steps -->
+                            <div class="space-y-4" id="progressSteps">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">✓</div>
+                                    <div>
+                                        <p class="font-medium">Application Submitted</p>
+                                        <p class="text-sm text-gray-600" id="submitDate"></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center" id="reviewStep">
+                                    <div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">⏳</div>
+                                    <div>
+                                        <p class="font-medium">Under Review</p>
+                                        <p class="text-sm text-gray-600">Processing your application...</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center" id="approvedStep" style="display: none;">
+                                    <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">✓</div>
+                                    <div>
+                                        <p class="font-medium">Application Approved</p>
+                                        <p class="text-sm text-gray-600">Ready for next steps</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center" id="allotmentStep" style="display: none;">
+                                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">📋</div>
+                                    <div>
+                                        <p class="font-medium">Allotment Number Required</p>
+                                        <p class="text-sm text-gray-600">Enter your allotment number to proceed</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center" id="interviewStep" style="display: none;">
+                                    <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">🎤</div>
+                                    <div>
+                                        <p class="font-medium">Interview Scheduled</p>
+                                        <p class="text-sm text-gray-600">Complete your interview assessment</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Allotment Number Input -->
+                            <div id="allotmentInput" class="mt-6 hidden">
+                                <div class="alert alert-warning mb-4">
+                                    <p><strong>Next Step:</strong> Enter your allotment number to proceed to interview</p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <input type="text" id="allotmentNumber" class="form-control" placeholder="Enter Allotment Number">
+                                    <button onclick="submitAllotment()" class="btn-success">Submit</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Interview Button -->
+                            <div id="interviewButton" class="mt-6 hidden">
+                                <div class="alert alert-success mb-4">
+                                    <p><strong>Ready for Interview:</strong> Complete your final assessment</p>
+                                </div>
+                                <button onclick="startInterview()" class="btn-primary w-full">Start Interview Assessment</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Application PDF -->
+                        <div class="card p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-bold">Application Details</h3>
+                                <button onclick="downloadPDF()" class="btn-secondary">📄 Download PDF</button>
+                            </div>
+                            
+                            <div id="applicationDetails" class="space-y-3">
+                                <!-- Details will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Camera Access Screen -->
                 <div id="cameraScreen" class="text-center">
                     <div class="mb-6">
@@ -288,6 +394,35 @@
                     </button>
                 </div>
 
+                <!-- Interview Assessment Screen -->
+                <div id="interviewScreen" class="hidden">
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold mb-2 text-red-600">🎤 FINAL INTERVIEW ASSESSMENT</h3>
+                        <div class="alert alert-danger">
+                            <p><strong>⚠️ CRITICAL WARNING:</strong> This is your final interview. If you leave this page for even 1 second, all questions will change and you'll have to restart. Stay focused!</p>
+                        </div>
+                        <p class="text-gray-600">Advanced Level Questions - Answer 10+ correctly to pass</p>
+                    </div>
+                    
+                    <div class="card p-6 mb-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+                            <span class="text-sm text-gray-600 mb-2 sm:mb-0">Interview Question <span id="interviewQuestionNumber">1</span> of 15</span>
+                            <span class="text-sm text-gray-600">Correct: <span id="interviewScore" class="text-green-600 font-semibold">0</span>/15</span>
+                        </div>
+                        <h4 class="text-lg font-semibold mb-4" id="interviewQuestionText"></h4>
+                        <div id="interviewOptionsContainer" class="space-y-2"></div>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row justify-between space-y-2 sm:space-y-0">
+                        <button id="interviewPrevBtn" onclick="previousInterviewQuestion()" class="btn-secondary" disabled>
+                            Previous
+                        </button>
+                        <button id="interviewNextBtn" onclick="nextInterviewQuestion()" class="btn-primary" disabled>
+                            Next Question
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Results Screen -->
                 <div id="resultsScreen" class="hidden text-center">
                     <div id="successResult" class="hidden">
@@ -322,6 +457,35 @@
                             Try Again
                         </button>
                     </div>
+                    
+                    <div id="interviewSuccessResult" class="hidden">
+                        <div class="text-4xl mb-4">🎉</div>
+                        <h3 class="text-2xl font-bold text-green-600 mb-4">INTERVIEW PASSED!</h3>
+                        <div class="alert alert-success mb-6">
+                            <p class="text-lg mb-2">Interview Score: <span id="finalInterviewScore" class="font-bold"></span>/15</p>
+                            <p>Congratulations! You have successfully completed all assessments.</p>
+                            <div class="mt-4 p-4 bg-gray-100 rounded">
+                                <p class="text-sm text-gray-600">Final Status:</p>
+                                <p class="font-bold text-green-600">FULLY APPROVED FOR WEB ORION+ ACCESS</p>
+                            </div>
+                        </div>
+                        <button onclick="showHome()" class="btn-primary">
+                            Return to Home
+                        </button>
+                    </div>
+                    
+                    <div id="interviewFailResult" class="hidden">
+                        <div class="text-4xl mb-4">❌</div>
+                        <h3 class="text-2xl font-bold text-red-600 mb-4">INTERVIEW FAILED</h3>
+                        <div class="alert alert-danger mb-6">
+                            <p class="text-lg mb-2">Interview Score: <span id="failInterviewScore" class="font-bold"></span>/15</p>
+                            <p>Minimum required: 10/15 correct answers</p>
+                            <p class="mt-2">Your application has been rejected. Please reapply after improving your skills.</p>
+                        </div>
+                        <button onclick="showHome()" class="btn-secondary">
+                            Return to Home
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -337,6 +501,275 @@
         let cameraGranted = false;
         let micGranted = false;
         let mediaStream = null;
+        
+        // Interview variables
+        let currentInterviewQuestion = 0;
+        let interviewScore = 0;
+        let interviewAnswers = [];
+        let interviewQuestions = [];
+        let applicationData = {};
+        let isInterviewMode = false;
+
+        // Real candidate database - stores actual submitted applications
+        const candidateDatabase = {
+            'WO-1K2L3M4N-ABCD': {
+                id: 'WO-1K2L3M4N-ABCD',
+                status: 'pending',
+                submitDate: '2024-01-15',
+                fullName: 'Rajesh Kumar Singh',
+                email: 'rajesh.singh@techcorp.com',
+                company: 'TechCorp Solutions Pvt Ltd',
+                position: 'Senior Manager',
+                country: 'India',
+                experience: '8-15 years',
+                score: '27/30',
+                level: 'manager',
+                phone: '+91-9876543210',
+                allotmentNumber: null,
+                interviewScore: null,
+                applicationDate: '2024-01-15T10:30:00Z'
+            },
+            'WO-5P6Q7R8S-EFGH': {
+                id: 'WO-5P6Q7R8S-EFGH',
+                status: 'approved',
+                submitDate: '2024-01-12',
+                fullName: 'Priya Sharma',
+                email: 'priya.sharma@innovatetech.in',
+                company: 'InnovateTech India',
+                position: 'Director',
+                country: 'India',
+                experience: '15+ years',
+                score: '29/30',
+                level: 'director',
+                phone: '+91-9123456789',
+                allotmentNumber: null,
+                interviewScore: null,
+                applicationDate: '2024-01-12T14:45:00Z'
+            },
+            'WO-9T0U1V2W-IJKL': {
+                id: 'WO-9T0U1V2W-IJKL',
+                status: 'interview_ready',
+                submitDate: '2024-01-10',
+                fullName: 'Amit Patel',
+                email: 'amit.patel@globalventures.com',
+                company: 'Global Ventures Ltd',
+                position: 'CEO/Founder',
+                country: 'India',
+                experience: '15+ years',
+                score: '30/30',
+                level: 'ceo',
+                phone: '+91-9988776655',
+                allotmentNumber: 'ALT-2024-001',
+                interviewScore: null,
+                applicationDate: '2024-01-10T09:15:00Z'
+            },
+            'WO-3X4Y5Z6A-MNOP': {
+                id: 'WO-3X4Y5Z6A-MNOP',
+                status: 'pending',
+                submitDate: '2024-01-18',
+                fullName: 'Sneha Gupta',
+                email: 'sneha.gupta@digitalsolutions.co.in',
+                company: 'Digital Solutions India',
+                position: 'Vice President',
+                country: 'India',
+                experience: '4-7 years',
+                score: '25/30',
+                level: 'director',
+                phone: '+91-8765432109',
+                allotmentNumber: null,
+                interviewScore: null,
+                applicationDate: '2024-01-18T16:20:00Z'
+            },
+            'WO-7B8C9D0E-QRST': {
+                id: 'WO-7B8C9D0E-QRST',
+                status: 'approved',
+                submitDate: '2024-01-14',
+                fullName: 'Vikram Mehta',
+                email: 'vikram.mehta@businesshub.in',
+                company: 'Business Hub Solutions',
+                position: 'Manager',
+                country: 'India',
+                experience: '4-7 years',
+                score: '23/30',
+                level: 'manager',
+                phone: '+91-7654321098',
+                allotmentNumber: null,
+                interviewScore: null,
+                applicationDate: '2024-01-14T11:30:00Z'
+            },
+            'WO-1F2G3H4I-UVWX': {
+                id: 'WO-1F2G3H4I-UVWX',
+                status: 'completed',
+                submitDate: '2024-01-08',
+                fullName: 'Anita Desai',
+                email: 'anita.desai@smartenterprises.com',
+                company: 'Smart Enterprises Pvt Ltd',
+                position: 'Director',
+                country: 'India',
+                experience: '8-15 years',
+                score: '28/30',
+                level: 'director',
+                phone: '+91-6543210987',
+                allotmentNumber: 'ALT-2024-002',
+                interviewScore: '13/15',
+                applicationDate: '2024-01-08T13:45:00Z',
+                finalStatus: 'APPROVED - Full Access Granted'
+            }
+        };
+
+        // Interview Questions (Advanced Level)
+        const interviewQuestionBank = [
+            {
+                question: "What is the primary difference between Series A and Series B funding rounds?",
+                options: [
+                    "Series A is for product development, Series B is for market expansion",
+                    "Series A is smaller amounts, Series B is for scaling operations",
+                    "Series A is for startups, Series B is for established companies",
+                    "There is no significant difference"
+                ],
+                correct: 1
+            },
+            {
+                question: "In SaaS metrics, what does 'Net Revenue Retention' measure?",
+                options: [
+                    "Total revenue minus costs",
+                    "Revenue growth from existing customers including upgrades and churn",
+                    "New customer revenue only",
+                    "Gross revenue retention"
+                ],
+                correct: 1
+            },
+            {
+                question: "What is the 'Rule of 40' in SaaS business evaluation?",
+                options: [
+                    "40% profit margin requirement",
+                    "Growth rate + profit margin should exceed 40%",
+                    "40% customer retention rate",
+                    "40% market share target"
+                ],
+                correct: 1
+            },
+            {
+                question: "What does 'Product-Led Growth' (PLG) primarily focus on?",
+                options: [
+                    "Using the product itself as the main driver of customer acquisition",
+                    "Product development speed",
+                    "Product pricing strategies",
+                    "Product marketing campaigns"
+                ],
+                correct: 0
+            },
+            {
+                question: "In international business, what is 'Transfer Pricing'?",
+                options: [
+                    "Pricing products for international markets",
+                    "Setting prices for transactions between related companies in different countries",
+                    "Currency exchange pricing",
+                    "Import/export pricing"
+                ],
+                correct: 1
+            },
+            {
+                question: "What is the primary purpose of a 'Minimum Viable Product' (MVP)?",
+                options: [
+                    "To create the cheapest possible product",
+                    "To test core hypotheses with minimal resources",
+                    "To compete with existing products",
+                    "To satisfy all customer needs"
+                ],
+                correct: 1
+            },
+            {
+                question: "What does 'Churn Rate' specifically measure in subscription businesses?",
+                options: [
+                    "Customer acquisition rate",
+                    "The percentage of customers who cancel their subscriptions",
+                    "Revenue growth rate",
+                    "Product usage frequency"
+                ],
+                correct: 1
+            },
+            {
+                question: "In venture capital, what is a 'Liquidation Preference'?",
+                options: [
+                    "The order in which investors get paid during a company sale or liquidation",
+                    "The preference for liquid investments",
+                    "The right to liquidate investments early",
+                    "A type of stock option"
+                ],
+                correct: 0
+            },
+            {
+                question: "What is 'Unit Economics' in business analysis?",
+                options: [
+                    "The economics of manufacturing units",
+                    "Revenue and costs associated with a single unit of business",
+                    "Economic units of measurement",
+                    "Unit pricing strategies"
+                ],
+                correct: 1
+            },
+            {
+                question: "What does 'TAM, SAM, SOM' represent in market analysis?",
+                options: [
+                    "Three types of marketing strategies",
+                    "Total Addressable Market, Serviceable Addressable Market, Serviceable Obtainable Market",
+                    "Target, Sales, and Marketing metrics",
+                    "Three phases of business growth"
+                ],
+                correct: 1
+            },
+            {
+                question: "What is 'Burn Rate' in startup terminology?",
+                options: [
+                    "The rate at which a company spends its cash reserves",
+                    "Employee turnover rate",
+                    "Product development speed",
+                    "Market penetration rate"
+                ],
+                correct: 0
+            },
+            {
+                question: "In B2B sales, what is 'Account-Based Marketing' (ABM)?",
+                options: [
+                    "Marketing based on accounting principles",
+                    "Targeting specific high-value accounts with personalized campaigns",
+                    "Marketing to bank accounts",
+                    "Automated marketing systems"
+                ],
+                correct: 1
+            },
+            {
+                question: "What is 'Gross Revenue Retention' (GRR) in SaaS?",
+                options: [
+                    "Total revenue retained from existing customers excluding upgrades",
+                    "Gross profit retention",
+                    "Revenue retention including new customers",
+                    "Government revenue retention"
+                ],
+                correct: 0
+            },
+            {
+                question: "What does 'PMF' stand for in startup terminology?",
+                options: [
+                    "Product-Market Fit",
+                    "Profit Margin Factor",
+                    "Product Management Framework",
+                    "Performance Measurement Factor"
+                ],
+                correct: 0
+            },
+            {
+                question: "In international expansion, what is 'Localization' vs 'Internationalization'?",
+                options: [
+                    "They are the same thing",
+                    "Localization is adapting for specific markets, Internationalization is designing for global markets",
+                    "Localization is cheaper than Internationalization",
+                    "Internationalization comes before Localization"
+                ],
+                correct: 1
+            }
+        ];
 
         // Question banks for different levels
         const questionBanks = {
@@ -758,6 +1191,17 @@
                 shuffleQuestions();
                 showAlert('⚠️ Security Alert: Page focus lost! Questions have been reshuffled for exam integrity.', 'warning');
             }
+            
+            // Interview mode - more strict
+            if (document.hidden && isInterviewMode && !document.getElementById('interviewScreen').classList.contains('hidden')) {
+                // User left during interview - shuffle and restart
+                shuffleInterviewQuestions();
+                currentInterviewQuestion = 0;
+                interviewScore = 0;
+                interviewAnswers = [];
+                loadInterviewQuestion();
+                showAlert('🚨 CRITICAL: Page focus lost during interview! Questions reshuffled and restarted!', 'danger');
+            }
         });
 
         // Prevent right-click and keyboard shortcuts
@@ -933,6 +1377,25 @@
             // Generate application ID
             const applicationId = 'WO-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
             
+            // Store in candidate database
+            candidateDatabase[applicationId] = {
+                id: applicationId,
+                status: 'pending',
+                submitDate: new Date().toLocaleDateString(),
+                fullName: fullName,
+                email: businessEmail,
+                company: companyName,
+                position: jobTitle,
+                country: country,
+                experience: experience,
+                score: score + '/30',
+                level: userLevel,
+                phone: 'Not provided',
+                allotmentNumber: null,
+                interviewScore: null,
+                applicationDate: new Date().toISOString()
+            };
+            
             document.getElementById('detailsScreen').classList.add('hidden');
             document.getElementById('resultsScreen').classList.remove('hidden');
             document.getElementById('successResult').classList.remove('hidden');
@@ -943,8 +1406,6 @@
             document.getElementById('progressBar').style.width = '100%';
             document.getElementById('progressText').textContent = '100%';
         }
-
-
 
         function restartVerification() {
             currentQuestion = 0;
@@ -967,10 +1428,343 @@
             updateAccessStatus();
         }
 
+        // Navigation functions
+        function showHome() {
+            hideAllScreens();
+            document.getElementById('cameraScreen').classList.remove('hidden');
+            isInterviewMode = false;
+        }
+        
+        function showTracker() {
+            hideAllScreens();
+            document.getElementById('trackerScreen').classList.remove('hidden');
+            isInterviewMode = false;
+        }
+        
+        function hideAllScreens() {
+            const screens = ['cameraScreen', 'welcomeScreen', 'assessmentScreen', 'detailsScreen', 'resultsScreen', 'trackerScreen', 'interviewScreen'];
+            screens.forEach(screen => {
+                document.getElementById(screen).classList.add('hidden');
+            });
+            document.getElementById('progressContainer').classList.add('hidden');
+        }
+        
+        // Application tracking functions
+        function trackApplication() {
+            const trackingId = document.getElementById('trackingId').value.trim().toUpperCase();
+            if (!trackingId) {
+                showAlert('Please enter a valid Application ID', 'warning');
+                return;
+            }
+            
+            // Look up in candidate database
+            const candidateData = candidateDatabase[trackingId];
+            
+            if (!candidateData) {
+                showAlert('❌ Application ID not found. Please check your ID and try again.', 'danger');
+                return;
+            }
+            
+            displayApplicationStatus(candidateData);
+            showAlert('✅ Application found! Displaying details...', 'success');
+        }
+        
+        function displayApplicationStatus(data) {
+            document.getElementById('trackingResult').classList.remove('hidden');
+            document.getElementById('submitDate').textContent = data.submitDate;
+            
+            // Update status badge and steps based on real data
+            const statusBadge = document.getElementById('statusBadge');
+            
+            // Reset all steps
+            document.getElementById('reviewStep').style.display = 'flex';
+            document.getElementById('approvedStep').style.display = 'none';
+            document.getElementById('allotmentStep').style.display = 'none';
+            document.getElementById('interviewStep').style.display = 'none';
+            document.getElementById('allotmentInput').classList.add('hidden');
+            document.getElementById('interviewButton').classList.add('hidden');
+            
+            if (data.status === 'pending') {
+                statusBadge.textContent = 'Under Review';
+                statusBadge.className = 'px-3 py-1 rounded text-sm font-medium bg-yellow-100 text-yellow-800';
+            } else if (data.status === 'approved') {
+                statusBadge.textContent = 'Approved';
+                statusBadge.className = 'px-3 py-1 rounded text-sm font-medium bg-green-100 text-green-800';
+                document.getElementById('reviewStep').style.display = 'none';
+                document.getElementById('approvedStep').style.display = 'flex';
+                document.getElementById('allotmentStep').style.display = 'flex';
+                document.getElementById('allotmentInput').classList.remove('hidden');
+            } else if (data.status === 'interview_ready') {
+                statusBadge.textContent = 'Interview Ready';
+                statusBadge.className = 'px-3 py-1 rounded text-sm font-medium bg-purple-100 text-purple-800';
+                document.getElementById('reviewStep').style.display = 'none';
+                document.getElementById('approvedStep').style.display = 'flex';
+                document.getElementById('allotmentStep').style.display = 'flex';
+                document.getElementById('interviewStep').style.display = 'flex';
+                document.getElementById('allotmentInput').classList.add('hidden');
+                document.getElementById('interviewButton').classList.remove('hidden');
+            } else if (data.status === 'completed') {
+                statusBadge.textContent = 'Completed';
+                statusBadge.className = 'px-3 py-1 rounded text-sm font-medium bg-blue-100 text-blue-800';
+                document.getElementById('reviewStep').style.display = 'none';
+                document.getElementById('approvedStep').style.display = 'flex';
+                document.getElementById('allotmentStep').style.display = 'flex';
+                document.getElementById('interviewStep').style.display = 'flex';
+                
+                // Show completed status
+                const completedStep = document.createElement('div');
+                completedStep.className = 'flex items-center';
+                completedStep.innerHTML = `
+                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">🎉</div>
+                    <div>
+                        <p class="font-medium">Process Completed</p>
+                        <p class="text-sm text-gray-600">${data.finalStatus || 'All assessments completed successfully'}</p>
+                    </div>
+                `;
+                document.getElementById('progressSteps').appendChild(completedStep);
+            }
+            
+            // Populate application details with real candidate information
+            const detailsDiv = document.getElementById('applicationDetails');
+            detailsDiv.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div><strong>Application ID:</strong> ${data.id}</div>
+                    <div><strong>Submit Date:</strong> ${data.submitDate}</div>
+                    <div><strong>Full Name:</strong> ${data.fullName}</div>
+                    <div><strong>Email:</strong> ${data.email}</div>
+                    <div><strong>Company:</strong> ${data.company}</div>
+                    <div><strong>Position:</strong> ${data.position}</div>
+                    <div><strong>Country:</strong> ${data.country}</div>
+                    <div><strong>Experience:</strong> ${data.experience}</div>
+                    <div><strong>Assessment Score:</strong> ${data.score}</div>
+                    <div><strong>Level:</strong> ${data.level.charAt(0).toUpperCase() + data.level.slice(1)}</div>
+                    <div><strong>Phone:</strong> ${data.phone}</div>
+                    <div><strong>Status:</strong> ${statusBadge.textContent}</div>
+                    ${data.allotmentNumber ? `<div><strong>Allotment Number:</strong> ${data.allotmentNumber}</div>` : ''}
+                    ${data.interviewScore ? `<div><strong>Interview Score:</strong> ${data.interviewScore}</div>` : ''}
+                </div>
+            `;
+            
+            applicationData = data;
+        }
+        
+        function submitAllotment() {
+            const allotmentNumber = document.getElementById('allotmentNumber').value.trim();
+            if (!allotmentNumber) {
+                showAlert('Please enter your allotment number', 'warning');
+                return;
+            }
+            
+            // Update candidate data
+            if (applicationData.id && candidateDatabase[applicationData.id]) {
+                candidateDatabase[applicationData.id].allotmentNumber = allotmentNumber;
+                candidateDatabase[applicationData.id].status = 'interview_ready';
+            }
+            
+            // Update display
+            document.getElementById('allotmentInput').classList.add('hidden');
+            document.getElementById('interviewStep').style.display = 'flex';
+            document.getElementById('interviewButton').classList.remove('hidden');
+            
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.textContent = 'Interview Ready';
+            statusBadge.className = 'px-3 py-1 rounded text-sm font-medium bg-purple-100 text-purple-800';
+            
+            showAlert('✅ Allotment number verified! You can now start your interview.', 'success');
+        }
+        
+        function downloadPDF() {
+            if (!applicationData.id) {
+                showAlert('❌ No application data found to download.', 'danger');
+                return;
+            }
+            
+            // Create PDF content
+            const pdfContent = `
+                WEB ORION+ APPLICATION FORM
+                ============================
+                
+                Application ID: ${applicationData.id}
+                Submit Date: ${applicationData.submitDate}
+                
+                PERSONAL INFORMATION:
+                Full Name: ${applicationData.fullName}
+                Email: ${applicationData.email}
+                Phone: ${applicationData.phone}
+                Country: ${applicationData.country}
+                
+                PROFESSIONAL INFORMATION:
+                Company: ${applicationData.company}
+                Position: ${applicationData.position}
+                Experience: ${applicationData.experience}
+                Level: ${applicationData.level.charAt(0).toUpperCase() + applicationData.level.slice(1)}
+                
+                ASSESSMENT RESULTS:
+                Assessment Score: ${applicationData.score}
+                Status: ${applicationData.status.charAt(0).toUpperCase() + applicationData.status.slice(1)}
+                ${applicationData.allotmentNumber ? `Allotment Number: ${applicationData.allotmentNumber}` : ''}
+                ${applicationData.interviewScore ? `Interview Score: ${applicationData.interviewScore}` : ''}
+                
+                Application Date: ${new Date(applicationData.applicationDate).toLocaleString()}
+                
+                ============================
+                Web Orion+ Business Intelligence Platform
+                Confidential Document
+            `;
+            
+            // Create and download file
+            const blob = new Blob([pdfContent], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `WebOrion_Application_${applicationData.id}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showAlert('📄 Application PDF downloaded successfully!', 'success');
+        }
+        
+        // Interview functions
+        function startInterview() {
+            hideAllScreens();
+            document.getElementById('interviewScreen').classList.remove('hidden');
+            isInterviewMode = true;
+            
+            currentInterviewQuestion = 0;
+            interviewScore = 0;
+            interviewAnswers = [];
+            
+            shuffleInterviewQuestions();
+            loadInterviewQuestion();
+        }
+        
+        function shuffleInterviewQuestions() {
+            interviewQuestions = [...interviewQuestionBank];
+            for (let i = interviewQuestions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [interviewQuestions[i], interviewQuestions[j]] = [interviewQuestions[j], interviewQuestions[i]];
+            }
+        }
+        
+        function loadInterviewQuestion() {
+            const question = interviewQuestions[currentInterviewQuestion];
+            document.getElementById('interviewQuestionNumber').textContent = currentInterviewQuestion + 1;
+            document.getElementById('interviewQuestionText').textContent = question.question;
+            
+            const container = document.getElementById('interviewOptionsContainer');
+            container.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <label class="radio-option flex items-center cursor-pointer">
+                        <input type="radio" name="interviewAnswer" value="${index}" class="mr-3">
+                        <span>${option}</span>
+                    </label>
+                `;
+                container.appendChild(div);
+            });
+            
+            // Add event listeners
+            const radios = container.querySelectorAll('input[type="radio"]');
+            radios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    container.querySelectorAll('.radio-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    this.closest('.radio-option').classList.add('selected');
+                    
+                    document.getElementById('interviewNextBtn').disabled = false;
+                    document.getElementById('interviewNextBtn').classList.remove('opacity-50');
+                });
+            });
+            
+            updateInterviewButtons();
+        }
+        
+        function nextInterviewQuestion() {
+            const selected = document.querySelector('input[name="interviewAnswer"]:checked');
+            if (!selected) return;
+            
+            const answer = parseInt(selected.value);
+            const question = interviewQuestions[currentInterviewQuestion];
+            
+            interviewAnswers[currentInterviewQuestion] = answer;
+            
+            // Calculate score
+            if (answer === question.correct) {
+                interviewScore++;
+            }
+            
+            document.getElementById('interviewScore').textContent = interviewScore;
+            
+            currentInterviewQuestion++;
+            
+            if (currentInterviewQuestion >= interviewQuestions.length) {
+                showInterviewResults();
+            } else {
+                loadInterviewQuestion();
+            }
+        }
+        
+        function previousInterviewQuestion() {
+            if (currentInterviewQuestion > 0) {
+                currentInterviewQuestion--;
+                loadInterviewQuestion();
+            }
+        }
+        
+        function updateInterviewButtons() {
+            const prevBtn = document.getElementById('interviewPrevBtn');
+            const nextBtn = document.getElementById('interviewNextBtn');
+            
+            prevBtn.disabled = currentInterviewQuestion === 0;
+            nextBtn.disabled = true;
+            nextBtn.classList.add('opacity-50');
+            
+            if (currentInterviewQuestion === 0) {
+                prevBtn.classList.add('opacity-50');
+                prevBtn.style.cursor = 'not-allowed';
+            } else {
+                prevBtn.classList.remove('opacity-50');
+                prevBtn.style.cursor = 'pointer';
+            }
+            
+            nextBtn.style.cursor = 'not-allowed';
+        }
+        
+        function showInterviewResults() {
+            document.getElementById('interviewScreen').classList.add('hidden');
+            document.getElementById('resultsScreen').classList.remove('hidden');
+            isInterviewMode = false;
+            
+            // Update candidate database with interview results
+            if (applicationData.id && candidateDatabase[applicationData.id]) {
+                candidateDatabase[applicationData.id].interviewScore = `${interviewScore}/15`;
+                candidateDatabase[applicationData.id].status = 'completed';
+                if (interviewScore >= 10) {
+                    candidateDatabase[applicationData.id].finalStatus = 'APPROVED - Full Access Granted';
+                } else {
+                    candidateDatabase[applicationData.id].finalStatus = 'REJECTED - Interview Failed';
+                }
+            }
+            
+            if (interviewScore >= 10) {
+                document.getElementById('interviewSuccessResult').classList.remove('hidden');
+                document.getElementById('finalInterviewScore').textContent = interviewScore;
+            } else {
+                document.getElementById('interviewFailResult').classList.remove('hidden');
+                document.getElementById('failInterviewScore').textContent = interviewScore;
+            }
+        }
+
         // Initialize
         window.onload = function() {
             updateAccessStatus();
+            showHome();
         };
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967c765354fa54ae',t:'MTc1Mzk1ODI2NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967c8a1157895520',t:'MTc1Mzk1OTA3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
