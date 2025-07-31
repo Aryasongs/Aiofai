@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Orion+ | Advanced Business Intelligence Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn-primary {
+            background: #2557a7;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background: #1e4a8c;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .alert {
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-control:focus {
+            border-color: #2557a7;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(37, 87, 167, 0.25);
+        }
+        
+        .progress-bar {
+            transition: width 0.3s ease;
+            background: #2557a7;
+        }
+        
+        .radio-option {
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .radio-option:hover {
+            border-color: #2557a7;
+            background: #f8f9ff;
+        }
+        
+        .radio-option.selected {
+            border-color: #2557a7;
+            background: #f8f9ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen py-4 px-4">
+        <div class="container mx-auto max-w-4xl">
+            <!-- Header -->
+            <div class="text-center mb-6">
+                <div class="flex items-center justify-center mb-4">
+                    <div class="w-10 h-10 bg-blue-600 rounded flex items-center justify-center mr-3">
+                        <svg class="w-6 h-6" fill="white" viewBox="0 0 24 24">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <h1 class="text-3xl font-bold text-blue-600">Web Orion+</h1>
+                </div>
+                <p class="text-gray-600">Advanced Business Intelligence Platform</p>
+                <div class="flex items-center justify-center mt-2">
+                    <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    <span class="text-green-600 text-sm">System Online • Secure Connection</span>
+                </div>
+            </div>
+
+            <!-- Main Container -->
+            <div class="card p-6 md:p-8">
+                <!-- Camera Access Screen -->
+                <div id="cameraScreen" class="text-center">
+                    <div class="mb-6">
+                        <div class="text-4xl mb-4">📹</div>
+                        <h2 class="text-2xl font-bold mb-4">Security Verification Required</h2>
+                        <div class="alert alert-warning">
+                            <p class="mb-2"><strong>Important:</strong> To ensure exam integrity and prevent cheating, we need to:</p>
+                            <ul class="text-left list-disc list-inside space-y-1">
+                                <li>Monitor your camera during the assessment</li>
+                                <li>Record audio to detect unauthorized assistance</li>
+                                <li>Track if you leave this page (questions will change)</li>
+                                <li>Verify your identity throughout the process</li>
+                            </ul>
+                        </div>
+                        <p class="text-gray-600 mb-4">Please grant camera and microphone access to continue.</p>
+                    </div>
+                    <div class="space-y-3">
+                        <button onclick="requestCameraFirst()" class="btn-primary w-full md:w-auto">
+                            📹 Enable Camera Access
+                        </button>
+                        <button onclick="requestMicFirst()" class="btn-primary w-full md:w-auto ml-0 md:ml-3">
+                            🎤 Enable Microphone Access
+                        </button>
+                    </div>
+                    <div id="accessStatus" class="mt-4"></div>
+                    <button id="proceedBtn" onclick="showWelcome()" class="btn-success w-full mt-4 hidden">
+                        Proceed to Verification
+                    </button>
+                </div>
+
+                <!-- Welcome Screen -->
+                <div id="welcomeScreen" class="text-center hidden">
+                    <div class="mb-6">
+                        <div class="text-4xl mb-4">🚨</div>
+                        <h2 class="text-2xl font-bold mb-4 text-red-600">SECURITY CHECKPOINT</h2>
+                        <div class="alert alert-warning">
+                            <p id="welcomeText">To enter Web Orion+, you must pass our advanced global screening process. This verifies your thinking, logic, business credibility, and international compliance. Please respond truthfully. Every answer is AI-analyzed. If you leave mid-way, all progress resets.</p>
+                        </div>
+                    </div>
+                    <button onclick="startVerification()" class="btn-primary">
+                        BEGIN VERIFICATION
+                    </button>
+                </div>
+
+                <!-- Progress Bar -->
+                <div id="progressContainer" class="hidden mb-6">
+                    <div class="flex justify-between text-sm text-gray-600 mb-2">
+                        <span>Verification Progress</span>
+                        <span id="progressText">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded h-2">
+                        <div id="progressBar" class="progress-bar h-2 rounded" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Business Assessment -->
+                <div id="assessmentScreen" class="hidden">
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold mb-2">Business Intelligence Assessment</h3>
+                        <p class="text-gray-600">Level: <span id="currentLevel" class="text-blue-600 font-semibold">Manager</span></p>
+                    </div>
+                    
+                    <div class="card p-6 mb-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+                            <span class="text-sm text-gray-600 mb-2 sm:mb-0">Question <span id="questionNumber">1</span> of 10</span>
+                            <span class="text-sm text-gray-600">Score: <span id="currentScore" class="text-green-600 font-semibold">0</span>/30</span>
+                        </div>
+                        <h4 class="text-lg font-semibold mb-4" id="questionText"></h4>
+                        <div id="optionsContainer" class="space-y-2"></div>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row justify-between space-y-2 sm:space-y-0">
+                        <button id="prevBtn" onclick="previousQuestion()" class="btn-secondary" disabled>
+                            Previous
+                        </button>
+                        <button id="nextBtn" onclick="nextQuestion()" class="btn-primary" disabled>
+                            Next Question
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Professional Details -->
+                <div id="detailsScreen" class="hidden">
+                    <h3 class="text-xl font-bold mb-6">Professional Verification</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Full Name *</label>
+                            <input type="text" id="fullName" class="form-control">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Business Email *</label>
+                            <input type="email" id="businessEmail" class="form-control">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Company Name *</label>
+                            <input type="text" id="companyName" class="form-control">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Job Title *</label>
+                            <select id="jobTitle" class="form-control">
+                                <option value="">Select Position</option>
+                                <option value="manager">Manager</option>
+                                <option value="director">Director</option>
+                                <option value="ceo">CEO/Founder</option>
+                                <option value="vp">Vice President</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Country *</label>
+                            <select id="country" class="form-control">
+                                <option value="">Select Country</option>
+                                <option value="us">United States</option>
+                                <option value="uk">United Kingdom</option>
+                                <option value="ca">Canada</option>
+                                <option value="au">Australia</option>
+                                <option value="in">India</option>
+                                <option value="de">Germany</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Years of Experience *</label>
+                            <select id="experience" class="form-control">
+                                <option value="">Select Experience</option>
+                                <option value="1-3">1-3 years</option>
+                                <option value="4-7">4-7 years</option>
+                                <option value="8-15">8-15 years</option>
+                                <option value="15+">15+ years</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button onclick="submitDetails()" class="btn-success w-full mt-6">
+                        SUBMIT APPLICATION
+                    </button>
+                </div>
+
+                <!-- Results Screen -->
+                <div id="resultsScreen" class="hidden text-center">
+                    <div id="successResult" class="hidden">
+                        <div class="text-4xl mb-4">✅</div>
+                        <h3 class="text-2xl font-bold text-green-600 mb-4">VERIFICATION SUCCESSFUL</h3>
+                        <div class="alert alert-success mb-6">
+                            <p class="text-lg mb-2">Final Score: <span id="finalScore" class="font-bold"></span>/30</p>
+                            <p>You have successfully qualified for Web Orion+ access.</p>
+                            <div class="mt-4 p-4 bg-gray-100 rounded">
+                                <p class="text-sm text-gray-600">Application ID:</p>
+                                <p class="font-mono text-blue-600" id="applicationId"></p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <p class="text-gray-600 mb-4">Your application is now being processed. You will receive an email notification once approved.</p>
+                            <div class="alert alert-warning">
+                                <p><strong>Status:</strong> Pending Review</p>
+                                <p class="text-sm">Expected processing time: 2-3 business days</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="failResult" class="hidden">
+                        <div class="text-4xl mb-4">❌</div>
+                        <h3 class="text-2xl font-bold text-red-600 mb-4">ACCESS DENIED</h3>
+                        <div class="alert alert-danger mb-6">
+                            <p class="text-lg mb-2">Final Score: <span id="failScore" class="font-bold"></span>/30</p>
+                            <p>Minimum required score: 18/30</p>
+                            <p class="mt-2">Please strengthen your business fundamentals and try again.</p>
+                        </div>
+                        <button onclick="restartVerification()" class="btn-secondary">
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = 0;
+        let score = 0;
+        let userAnswers = [];
+        let questions = [];
+        let userLevel = 'manager';
+        let pageVisible = true;
+        let cameraGranted = false;
+        let micGranted = false;
+        let mediaStream = null;
+
+        // Question banks for different levels
+        const questionBanks = {
+            manager: [
+                {
+                    question: "What is the most effective way to reduce Customer Acquisition Cost (CAC) for a B2B SaaS product?",
+                    options: [
+                        "Increase advertising spend",
+                        "Focus on referral programs and content marketing",
+                        "Lower product prices",
+                        "Hire more sales representatives"
+                    ],
+                    correct: 1,
+                    points: 3
+                },
+                {
+                    question: "In international business, what is the primary challenge when expanding to European markets?",
+                    options: [
+                        "Language barriers only",
+                        "GDPR compliance and data protection laws",
+                        "Currency exchange rates",
+                        "Time zone differences"
+                    ],
+                    correct: 1,
+                    points: 3
+                },
+                {
+                    question: "What does 'Product-Market Fit' mean in business strategy?",
+                    options: [
+                        "When your product price matches market expectations",
+                        "When your product satisfies strong market demand",
+                        "When your product features match competitors",
+                        "When your product design fits market trends"
+                    ],
+                    correct: 1,
+                    points: 3
+                },
+                {
+                    question: "Which metric is most important for measuring business growth sustainability?",
+                    options: [
+                        "Monthly revenue",
+                        "Customer Lifetime Value (CLV) to CAC ratio",
+                        "Number of employees",
+                        "Social media followers"
+                    ],
+                    correct: 1,
+                    points: 3
+                },
+                {
+                    question: "What is the best approach for pricing a SaaS product internationally?",
+                    options: [
+                        "Use the same price globally",
+                        "Implement purchasing power parity pricing",
+                        "Always charge premium in developed countries",
+                        "Base pricing only on local competition"
+                    ],
+                    correct: 1,
+                    points: 3
+                }
+            ],
+            director: [
+                {
+                    question: "What is the most critical factor in scaling a business from $1M to $10M ARR?",
+                    options: [
+                        "Hiring more developers",
+                        "Building repeatable sales processes and systems",
+                        "Expanding to more countries",
+                        "Increasing marketing budget"
+                    ],
+                    correct: 1,
+                    points: 3
+                },
+                {
+                    question: "In a freemium model, what's the optimal conversion rate from free to paid users?",
+                    options: [
+                        "1-2%",
+                        "2-5%",
+                        "10-15%",
+                        "20-25%"
+                    ],
+                    correct: 1,
+                    points: 3
+                },
+                {
+                    question: "What is the primary risk when expanding internationally without proper compliance?",
+                    options: [
+                        "Higher operational costs",
+                        "Legal penalties and business shutdown",
+                        "Cultural misunderstandings",
+                        "Currency fluctuation losses"
+                    ],
+                    correct: 1,
+                    points: 3
+                },
+                {
+                    question: "Which business model has the highest customer lifetime value potential?",
+                    options: [
+                        "One-time purchase",
+                        "Subscription with usage-based pricing",
+                        "Advertising-based",
+                        "Commission-based marketplace"
+                    ],
+                    correct: 1,
+                    points: 3
+                },
+                {
+                    question: "What is the most effective way to reduce churn in B2B SaaS?",
+                    options: [
+                        "Lower prices",
+                        "Proactive customer success and onboarding",
+                        "Add more features",
+                        "Increase sales team size"
+                    ],
+                    correct: 1,
+                    points: 3
+                }
+            ],
+            ceo: [
+                {
+                    question: "What is the most important metric for a CEO to track in a high-growth startup?",
+                    options: [
+                        "Monthly recurring revenue",
+                        "Net revenue retention and unit economics",
+                        "Number of customers",
+                        "Gross profit margin"
+                    ],
+                    correct: 1,
+                    points: 3
+                },
+                {
+                    question: "When raising Series A funding, what valuation multiple is typically applied to ARR?",
+                    options: [
+                        "2-5x ARR",
+                        "10-20x ARR",
+                        "25-50x ARR",
+                        "100x ARR"
+                    ],
+                    correct: 1,
+                    points: 3
+                },
+                {
+                    question: "What is the biggest challenge in building a global remote team?",
+                    options: [
+                        "Time zone coordination",
+                        "Maintaining company culture and communication",
+                        "Payroll complexity",
+                        "Legal compliance in multiple countries"
+                    ],
+                    correct: 1,
+                    points: 3
+                },
+                {
+                    question: "In enterprise sales, what is the typical sales cycle length for deals over $100K?",
+                    options: [
+                        "1-3 months",
+                        "6-18 months",
+                        "2-3 years",
+                        "Less than 1 month"
+                    ],
+                    correct: 1,
+                    points: 3
+                },
+                {
+                    question: "What is the most critical factor for successful international expansion?",
+                    options: [
+                        "Having local offices",
+                        "Understanding regulatory requirements and local market dynamics",
+                        "Hiring local sales teams",
+                        "Translating the product"
+                    ],
+                    correct: 1,
+                    points: 3
+                }
+            ]
+        };
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} fixed top-4 right-4 z-50 max-w-md`;
+            alertDiv.innerHTML = message;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        function requestCameraFirst() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(stream) {
+                    cameraGranted = true;
+                    mediaStream = stream;
+                    updateAccessStatus();
+                    showAlert('✅ Camera access granted successfully!', 'success');
+                })
+                .catch(function(err) {
+                    showAlert('❌ Camera access is required to proceed.', 'danger');
+                });
+        }
+
+        function requestMicFirst() {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(function(stream) {
+                    micGranted = true;
+                    if (mediaStream) {
+                        // Add audio track to existing stream
+                        stream.getAudioTracks().forEach(track => {
+                            mediaStream.addTrack(track);
+                        });
+                    } else {
+                        mediaStream = stream;
+                    }
+                    updateAccessStatus();
+                    showAlert('✅ Microphone access granted successfully!', 'success');
+                })
+                .catch(function(err) {
+                    showAlert('❌ Microphone access is required to proceed.', 'danger');
+                });
+        }
+
+        function updateAccessStatus() {
+            const statusDiv = document.getElementById('accessStatus');
+            let status = '<div class="space-y-2">';
+            
+            if (cameraGranted) {
+                status += '<div class="text-green-600">✅ Camera: Enabled</div>';
+            } else {
+                status += '<div class="text-red-600">❌ Camera: Required</div>';
+            }
+            
+            if (micGranted) {
+                status += '<div class="text-green-600">✅ Microphone: Enabled</div>';
+            } else {
+                status += '<div class="text-red-600">❌ Microphone: Required</div>';
+            }
+            
+            status += '</div>';
+            statusDiv.innerHTML = status;
+            
+            if (cameraGranted && micGranted) {
+                document.getElementById('proceedBtn').classList.remove('hidden');
+            }
+        }
+
+        function showWelcome() {
+            document.getElementById('cameraScreen').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+        }
+
+        // Page visibility detection
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden && currentQuestion >= 0 && currentQuestion < 10 && !document.getElementById('assessmentScreen').classList.contains('hidden')) {
+                // User left the page during assessment - shuffle questions
+                shuffleQuestions();
+                showAlert('⚠️ Security Alert: Page focus lost! Questions have been reshuffled for exam integrity.', 'warning');
+            }
+        });
+
+        // Prevent right-click and keyboard shortcuts
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            // Prevent F12, Ctrl+Shift+I, Ctrl+U, etc.
+            if (e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+                (e.ctrlKey && e.shiftKey && e.key === 'C') ||
+                (e.ctrlKey && e.key === 'u')) {
+                e.preventDefault();
+                showAlert('⚠️ Developer tools are disabled during the assessment.', 'warning');
+            }
+        });
+
+        function shuffleQuestions() {
+            const currentBank = questionBanks[userLevel];
+            for (let i = currentBank.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [currentBank[i], currentBank[j]] = [currentBank[j], currentBank[i]];
+            }
+            questions = [...currentBank];
+        }
+
+        function startVerification() {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('progressContainer').classList.remove('hidden');
+            document.getElementById('assessmentScreen').classList.remove('hidden');
+            
+            // Determine user level based on random selection for demo
+            const levels = ['manager', 'director', 'ceo'];
+            userLevel = levels[Math.floor(Math.random() * levels.length)];
+            document.getElementById('currentLevel').textContent = userLevel.charAt(0).toUpperCase() + userLevel.slice(1);
+            
+            shuffleQuestions();
+            loadQuestion();
+            updateProgress();
+        }
+
+        function loadQuestion() {
+            const question = questions[currentQuestion];
+            document.getElementById('questionNumber').textContent = currentQuestion + 1;
+            document.getElementById('questionText').textContent = question.question;
+            
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <label class="radio-option flex items-center cursor-pointer">
+                        <input type="radio" name="answer" value="${index}" class="mr-3">
+                        <span>${option}</span>
+                    </label>
+                `;
+                container.appendChild(div);
+            });
+            
+            // Add event listeners
+            const radios = container.querySelectorAll('input[type="radio"]');
+            radios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    // Remove selected class from all options
+                    container.querySelectorAll('.radio-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    // Add selected class to current option
+                    this.closest('.radio-option').classList.add('selected');
+                    
+                    document.getElementById('nextBtn').disabled = false;
+                    document.getElementById('nextBtn').classList.remove('opacity-50');
+                });
+            });
+            
+            updateButtons();
+        }
+
+        function nextQuestion() {
+            const selected = document.querySelector('input[name="answer"]:checked');
+            if (!selected) return;
+            
+            const answer = parseInt(selected.value);
+            const question = questions[currentQuestion];
+            
+            userAnswers[currentQuestion] = answer;
+            
+            // Calculate score
+            if (answer === question.correct) {
+                score += question.points;
+            } else if (Math.abs(answer - question.correct) <= 1) {
+                score += 1; // Partial credit
+            }
+            
+            document.getElementById('currentScore').textContent = score;
+            
+            currentQuestion++;
+            
+            if (currentQuestion >= questions.length) {
+                showResults();
+            } else {
+                loadQuestion();
+                updateProgress();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                loadQuestion();
+                updateProgress();
+            }
+        }
+
+        function updateButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentQuestion === 0;
+            nextBtn.disabled = true;
+            nextBtn.classList.add('opacity-50');
+            
+            if (currentQuestion === 0) {
+                prevBtn.classList.add('opacity-50');
+                prevBtn.style.cursor = 'not-allowed';
+            } else {
+                prevBtn.classList.remove('opacity-50');
+                prevBtn.style.cursor = 'pointer';
+            }
+            
+            nextBtn.style.cursor = 'not-allowed';
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 50; // 50% for assessment
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = Math.round(progress) + '%';
+        }
+
+        function showResults() {
+            document.getElementById('assessmentScreen').classList.add('hidden');
+            
+            if (score >= 18) {
+                // Show details form
+                document.getElementById('detailsScreen').classList.remove('hidden');
+                updateProgress();
+                const progress = 75; // 75% after assessment
+                document.getElementById('progressBar').style.width = progress + '%';
+                document.getElementById('progressText').textContent = progress + '%';
+            } else {
+                // Show failure
+                document.getElementById('resultsScreen').classList.remove('hidden');
+                document.getElementById('failResult').classList.remove('hidden');
+                document.getElementById('failScore').textContent = score;
+            }
+        }
+
+        function submitDetails() {
+            const fullName = document.getElementById('fullName').value;
+            const businessEmail = document.getElementById('businessEmail').value;
+            const companyName = document.getElementById('companyName').value;
+            const jobTitle = document.getElementById('jobTitle').value;
+            const country = document.getElementById('country').value;
+            const experience = document.getElementById('experience').value;
+            
+            if (!fullName || !businessEmail || !companyName || !jobTitle || !country || !experience) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
+            // Generate application ID
+            const applicationId = 'WO-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
+            
+            document.getElementById('detailsScreen').classList.add('hidden');
+            document.getElementById('resultsScreen').classList.remove('hidden');
+            document.getElementById('successResult').classList.remove('hidden');
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('applicationId').textContent = applicationId;
+            
+            // Complete progress
+            document.getElementById('progressBar').style.width = '100%';
+            document.getElementById('progressText').textContent = '100%';
+        }
+
+
+
+        function restartVerification() {
+            currentQuestion = 0;
+            score = 0;
+            userAnswers = [];
+            cameraGranted = false;
+            micGranted = false;
+            
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+            
+            document.getElementById('resultsScreen').classList.add('hidden');
+            document.getElementById('failResult').classList.add('hidden');
+            document.getElementById('cameraScreen').classList.remove('hidden');
+            document.getElementById('progressContainer').classList.add('hidden');
+            document.getElementById('proceedBtn').classList.add('hidden');
+            
+            updateAccessStatus();
+        }
+
+        // Initialize
+        window.onload = function() {
+            updateAccessStatus();
+        };
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967c6173276659d8',t:'MTc1Mzk1NzQxMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
