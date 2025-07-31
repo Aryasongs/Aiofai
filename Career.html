@@ -2865,9 +2865,9 @@ Verification Code: ${applicationData.id}-${Date.now().toString(36).toUpperCase()
                         document.getElementById('userCountry').textContent = getCountryName(userData.country);
                         document.getElementById('userSince').textContent = userData.registeredAt.toDate().toLocaleDateString();
                         
-                        // Check if user is admin (you can modify this logic)
-                        const adminEmails = ['admin@oriontec.xyz', 'support@oriontec.xyz', currentUser.email]; // Add your admin emails
-                        if (adminEmails.includes(currentUser.email) || userData.isAdmin) {
+                        // Check if user is admin - only specific email allowed
+                        const adminEmails = ['sgursharn076@gmail.com']; // Only this email has admin access
+                        if (adminEmails.includes(currentUser.email)) {
                             document.getElementById('adminBtn').style.display = 'inline-block';
                         }
                     }
@@ -2878,8 +2878,11 @@ Verification Code: ${applicationData.id}-${Date.now().toString(36).toUpperCase()
                     document.getElementById('userCountry').textContent = 'Unknown';
                     document.getElementById('userSince').textContent = 'Recently';
                     
-                    // Show admin button for any logged in user (for demo purposes)
-                    document.getElementById('adminBtn').style.display = 'inline-block';
+                    // Check admin access even in fallback
+                    const adminEmails = ['sgursharn076@gmail.com'];
+                    if (adminEmails.includes(currentUser.email)) {
+                        document.getElementById('adminBtn').style.display = 'inline-block';
+                    }
                 }
             }
         }
@@ -3030,5 +3033,5 @@ Verification Code: ${applicationData.id}-${Date.now().toString(36).toUpperCase()
             }, 1000);
         };
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967e9bc3b41c54da',t:'MTc1Mzk4MDc3MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967eb41905845a26',t:'MTc1Mzk4MTc2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
