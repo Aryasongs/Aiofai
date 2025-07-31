@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Firebase SDK - Compatible with ai.oriontec.xyz -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
     <!-- Security Headers for ai.oriontec.xyz -->
@@ -188,6 +189,11 @@
                             <button onclick="showRegisterForm()" class="text-blue-600 hover:text-blue-800 font-medium">
                                 Create New Account
                             </button>
+                            <div class="mt-3">
+                                <button onclick="resetPassword()" class="text-sm text-gray-500 hover:text-gray-700">
+                                    Forgot Password?
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -620,24 +626,29 @@
     </div>
 
     <script>
-        // Firebase Configuration - Updated for ai.oriontec.xyz
+        // Firebase Configuration - Your Project
         const firebaseConfig = {
-            apiKey: "AIzaSyDvOkBwRdtlAsAhqGWHVlON_QxzMp-04_c",
-            authDomain: "ai.oriontec.xyz",
-            projectId: "weborionplus-oriontec",
-            storageBucket: "weborionplus-oriontec.appspot.com",
-            messagingSenderId: "987654321098",
-            appId: "1:987654321098:web:oriontec123456789abcdef"
+            apiKey: "AIzaSyAl8eI-_8Ew9va0KPV8p4D2hc9WUTGiwuI",
+            authDomain: "chat-d647c.firebaseapp.com",
+            databaseURL: "https://chat-d647c-default-rtdb.firebaseio.com",
+            projectId: "chat-d647c",
+            storageBucket: "chat-d647c.firebasestorage.app",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:7248a0983dcf0d45a87418",
+            measurementId: "G-5RFLRYTLCN"
         };
 
         // Initialize Firebase with error handling
+        let db = null;
+        let auth = null;
         try {
             firebase.initializeApp(firebaseConfig);
-            const db = firebase.firestore();
-            console.log('✅ Firebase initialized successfully');
+            db = firebase.firestore();
+            auth = firebase.auth();
+            console.log('✅ Firebase initialized successfully with Authentication');
         } catch (error) {
             console.error('❌ Firebase initialization error:', error);
-            const db = null; // Fallback to local storage
+            // Fallback to local storage
         }
 
         let currentQuestion = 0;
@@ -2122,12 +2133,9 @@
             }
         }
 
-        // Authentication System
+        // Firebase Authentication System
         let isAuthenticated = false;
         let currentUser = null;
-
-        // User database (in real app, this would be server-side)
-        let userDatabase = JSON.parse(localStorage.getItem('webOrionUsers') || '[]');
 
         function showAuthScreen() {
             hideAllScreens();
@@ -2157,9 +2165,10 @@
             return password.length >= 6;
         }
 
-        function registerUser() {
+        // Firebase Registration
+        async function registerUser() {
             const country = document.getElementById('regCountry').value;
-            const email = document.getElementById('regEmail').value.trim().toLowerCase();
+            const email = document.getElementById('regEmail').value.trim();
             const password = document.getElementById('regPassword').value;
             const confirmPassword = document.getElementById('regConfirmPassword').value;
 
@@ -2184,36 +2193,64 @@
                 return;
             }
 
-            // Check if user already exists
-            const existingUser = userDatabase.find(user => user.email === email);
-            if (existingUser) {
-                showAlert('❌ Account with this email already exists. Please login instead.', 'danger');
+            if (!auth) {
+                showAlert('❌ Firebase Authentication not available. Please try again later.', 'danger');
                 return;
             }
 
-            // Create new user
-            const newUser = {
-                id: 'USER-' + Date.now().toString(36).toUpperCase(),
-                email: email,
-                password: btoa(password), // Basic encoding (in real app, use proper hashing)
-                country: country,
-                registeredAt: new Date().toISOString(),
-                lastLogin: null,
-                isActive: true
-            };
+            try {
+                showAlert('🔄 Creating your account with Firebase...', 'info');
+                
+                // Create user with Firebase Auth
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
 
-            userDatabase.push(newUser);
-            localStorage.setItem('webOrionUsers', JSON.stringify(userDatabase));
+                // Save additional user data to Firestore
+                if (db) {
+                    await db.collection('users').doc(user.uid).set({
+                        email: email,
+                        country: country,
+                        registeredAt: firebase.firestore.Timestamp.now(),
+                        lastLogin: null,
+                        isActive: true,
+                        displayName: email.split('@')[0]
+                    });
+                }
 
-            showAlert('✅ Account created successfully! Please login with your credentials.', 'success');
-            
-            // Clear form and switch to login
-            document.getElementById('registerForm').reset();
-            showLoginForm();
+                // Send email verification
+                await user.sendEmailVerification();
+
+                showAlert('✅ Account created successfully! Please check your email for verification link.', 'success');
+                
+                // Clear form and switch to login
+                document.getElementById('registerForm').reset();
+                showLoginForm();
+
+            } catch (error) {
+                console.error('Registration error:', error);
+                let errorMessage = '❌ Registration failed. ';
+                
+                switch (error.code) {
+                    case 'auth/email-already-in-use':
+                        errorMessage += 'This email is already registered. Please login instead.';
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage += 'Password is too weak. Please use a stronger password.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage += 'Invalid email address format.';
+                        break;
+                    default:
+                        errorMessage += error.message;
+                }
+                
+                showAlert(errorMessage, 'danger');
+            }
         }
 
-        function loginUser() {
-            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+        // Firebase Login
+        async function loginUser() {
+            const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
 
             if (!validateEmail(email)) {
@@ -2226,34 +2263,68 @@
                 return;
             }
 
-            // Find user in database
-            const user = userDatabase.find(user => 
-                user.email === email && 
-                user.password === btoa(password) && 
-                user.isActive
-            );
-
-            if (!user) {
-                showAlert('❌ Invalid email or password. Please check your credentials.', 'danger');
+            if (!auth) {
+                showAlert('❌ Firebase Authentication not available. Please try again later.', 'danger');
                 return;
             }
 
-            // Update last login
-            user.lastLogin = new Date().toISOString();
-            localStorage.setItem('webOrionUsers', JSON.stringify(userDatabase));
+            try {
+                showAlert('🔄 Signing in with Firebase...', 'info');
+                
+                // Sign in with Firebase Auth
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
 
-            // Set authentication
-            isAuthenticated = true;
-            currentUser = user;
-            localStorage.setItem('webOrionCurrentUser', JSON.stringify(user));
+                // Check if email is verified
+                if (!user.emailVerified) {
+                    showAlert('⚠️ Please verify your email address before logging in. Check your inbox for verification link.', 'warning');
+                    await auth.signOut();
+                    return;
+                }
 
-            showAlert('✅ Login successful! Welcome to Web Orion+', 'success');
-            
-            // Clear form and show main app
-            document.getElementById('loginForm').reset();
-            setTimeout(() => {
-                showMainApp();
-            }, 1000);
+                // Update last login in Firestore
+                if (db) {
+                    await db.collection('users').doc(user.uid).update({
+                        lastLogin: firebase.firestore.Timestamp.now()
+                    });
+                }
+
+                showAlert('✅ Login successful! Welcome to Web Orion+', 'success');
+                
+                // Clear form
+                document.getElementById('loginForm').reset();
+                
+                // Show main app after delay
+                setTimeout(() => {
+                    showMainApp();
+                }, 1000);
+
+            } catch (error) {
+                console.error('Login error:', error);
+                let errorMessage = '❌ Login failed. ';
+                
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage += 'No account found with this email. Please register first.';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage += 'Incorrect password. Please try again.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage += 'Invalid email address format.';
+                        break;
+                    case 'auth/user-disabled':
+                        errorMessage += 'This account has been disabled. Please contact support.';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage += 'Too many failed attempts. Please try again later.';
+                        break;
+                    default:
+                        errorMessage += error.message;
+                }
+                
+                showAlert(errorMessage, 'danger');
+            }
         }
 
         function showMainApp() {
@@ -2263,11 +2334,24 @@
             showHome();
         }
 
-        function updateUserInfo() {
-            if (currentUser) {
-                document.getElementById('userEmail').textContent = currentUser.email;
-                document.getElementById('userCountry').textContent = getCountryName(currentUser.country);
-                document.getElementById('userSince').textContent = new Date(currentUser.registeredAt).toLocaleDateString();
+        async function updateUserInfo() {
+            if (currentUser && db) {
+                try {
+                    // Get user data from Firestore
+                    const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        document.getElementById('userEmail').textContent = currentUser.email;
+                        document.getElementById('userCountry').textContent = getCountryName(userData.country);
+                        document.getElementById('userSince').textContent = userData.registeredAt.toDate().toLocaleDateString();
+                    }
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                    // Fallback to basic info
+                    document.getElementById('userEmail').textContent = currentUser.email;
+                    document.getElementById('userCountry').textContent = 'Unknown';
+                    document.getElementById('userSince').textContent = 'Recently';
+                }
             }
         }
 
@@ -2288,36 +2372,112 @@
             return countries[code] || code;
         }
 
-        function logoutUser() {
-            isAuthenticated = false;
-            currentUser = null;
-            localStorage.removeItem('webOrionCurrentUser');
-            
-            showAlert('👋 Logged out successfully!', 'info');
-            showAuthScreen();
+        async function logoutUser() {
+            try {
+                if (auth) {
+                    await auth.signOut();
+                }
+                
+                isAuthenticated = false;
+                currentUser = null;
+                
+                showAlert('👋 Logged out successfully from Firebase!', 'info');
+                showAuthScreen();
+            } catch (error) {
+                console.error('Logout error:', error);
+                showAlert('❌ Error during logout. Please try again.', 'danger');
+            }
         }
 
-        function checkAuthStatus() {
-            const savedUser = localStorage.getItem('webOrionCurrentUser');
-            if (savedUser) {
-                try {
-                    currentUser = JSON.parse(savedUser);
-                    isAuthenticated = true;
-                    showMainApp();
-                    return true;
-                } catch (error) {
-                    localStorage.removeItem('webOrionCurrentUser');
-                }
+        // Password Reset Function
+        async function resetPassword() {
+            const email = document.getElementById('loginEmail').value.trim();
+            
+            if (!email) {
+                showAlert('❌ Please enter your email address first', 'danger');
+                return;
             }
-            return false;
+            
+            if (!validateEmail(email)) {
+                showAlert('❌ Please enter a valid email address', 'danger');
+                return;
+            }
+            
+            if (!auth) {
+                showAlert('❌ Firebase Authentication not available. Please try again later.', 'danger');
+                return;
+            }
+            
+            try {
+                showAlert('🔄 Sending password reset email...', 'info');
+                
+                await auth.sendPasswordResetEmail(email);
+                
+                showAlert('✅ Password reset email sent! Please check your inbox and follow the instructions.', 'success');
+                
+            } catch (error) {
+                console.error('Password reset error:', error);
+                let errorMessage = '❌ Password reset failed. ';
+                
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage += 'No account found with this email address.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage += 'Invalid email address format.';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage += 'Too many requests. Please try again later.';
+                        break;
+                    default:
+                        errorMessage += error.message;
+                }
+                
+                showAlert(errorMessage, 'danger');
+            }
+        }
+
+        // Firebase Auth State Observer
+        function initializeAuthStateListener() {
+            if (auth) {
+                auth.onAuthStateChanged(async (user) => {
+                    if (user && user.emailVerified) {
+                        // User is signed in and email is verified
+                        isAuthenticated = true;
+                        currentUser = user;
+                        console.log('✅ User authenticated:', user.email);
+                        
+                        if (document.getElementById('authScreen').classList.contains('hidden')) {
+                            // User is already in the app, just update info
+                            updateUserInfo();
+                        } else {
+                            // User just logged in, show main app
+                            showMainApp();
+                        }
+                    } else {
+                        // User is signed out or email not verified
+                        isAuthenticated = false;
+                        currentUser = null;
+                        console.log('❌ User not authenticated');
+                        
+                        if (!document.getElementById('authScreen').classList.contains('hidden')) {
+                            // Already on auth screen, do nothing
+                            return;
+                        }
+                        
+                        showAuthScreen();
+                    }
+                });
+            }
         }
 
         // Initialize
         window.onload = function() {
-            // Check if user is already logged in
-            if (!checkAuthStatus()) {
-                showAuthScreen();
-            }
+            // Initialize Firebase Auth State Listener
+            initializeAuthStateListener();
+            
+            // Show auth screen initially (Firebase will handle auto-login)
+            showAuthScreen();
             
             updateAccessStatus();
             
@@ -2331,13 +2491,15 @@
             
             // Show Firebase connection status
             setTimeout(() => {
-                if (db) {
-                    showAlert('🔥 Secure Firebase connection established!', 'success');
+                if (db && auth) {
+                    showAlert('🔥 Firebase Authentication & Database connected!', 'success');
+                } else if (db) {
+                    showAlert('🔥 Firebase Database connected (Auth unavailable)', 'warning');
                 } else {
                     showAlert('⚠️ Using local storage - Firebase connection unavailable', 'warning');
                 }
             }, 1000);
         };
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967e6fe817195528',t:'MTc1Mzk3ODk3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967e810046878985',t:'MTc1Mzk3OTY3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
