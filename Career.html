@@ -143,31 +143,149 @@
 <body>
     <div class="min-h-screen py-4 px-4">
         <div class="container mx-auto max-w-4xl">
-            <!-- Header -->
-            <div class="text-center mb-6">
-                <div class="flex items-center justify-center mb-4">
-                    <div class="w-10 h-10 bg-blue-600 rounded flex items-center justify-center mr-3">
-                        <svg class="w-6 h-6" fill="white" viewBox="0 0 24 24">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                        </svg>
+            <!-- Authentication Screen -->
+            <div id="authScreen" class="hidden">
+                <div class="text-center mb-8">
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="w-12 h-12 bg-blue-600 rounded flex items-center justify-center mr-3">
+                            <svg class="w-8 h-8" fill="white" viewBox="0 0 24 24">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                            </svg>
+                        </div>
+                        <h1 class="text-4xl font-bold text-blue-600">Web Orion+</h1>
                     </div>
-                    <h1 class="text-3xl font-bold text-blue-600">Web Orion+</h1>
+                    <p class="text-gray-600 text-lg">Advanced Business Intelligence Platform</p>
+                    <div class="flex items-center justify-center mt-3">
+                        <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        <span class="text-green-600 text-sm">🔒 Secure Authentication • SSL Protected</span>
+                    </div>
                 </div>
-                <p class="text-gray-600">Advanced Business Intelligence Platform</p>
-                <div class="flex items-center justify-center mt-2">
-                    <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    <span class="text-green-600 text-sm">System Online • SSL Verified for ai.oriontec.xyz</span>
+
+                <div class="card p-8 max-w-md mx-auto">
+                    <div class="text-center mb-6">
+                        <h2 id="authTitle" class="text-2xl font-bold mb-2">Login to Web Orion+</h2>
+                        <p id="authSubtitle" class="text-gray-600">Enter your credentials to access the platform</p>
+                    </div>
+
+                    <!-- Login Form -->
+                    <div id="loginForm">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Email Address</label>
+                                <input type="email" id="loginEmail" class="form-control" placeholder="your.email@company.com" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Password</label>
+                                <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password" required>
+                            </div>
+                            <button onclick="loginUser()" class="btn-primary w-full">
+                                🔐 Login to Web Orion+
+                            </button>
+                        </div>
+                        
+                        <div class="text-center mt-6">
+                            <p class="text-gray-600">Don't have an account?</p>
+                            <button onclick="showRegisterForm()" class="text-blue-600 hover:text-blue-800 font-medium">
+                                Create New Account
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Registration Form -->
+                    <div id="registerForm" class="hidden">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Country *</label>
+                                <select id="regCountry" class="form-control" required>
+                                    <option value="">Select Your Country</option>
+                                    <option value="us">🇺🇸 United States</option>
+                                    <option value="uk">🇬🇧 United Kingdom</option>
+                                    <option value="ca">🇨🇦 Canada</option>
+                                    <option value="au">🇦🇺 Australia</option>
+                                    <option value="in">🇮🇳 India</option>
+                                    <option value="de">🇩🇪 Germany</option>
+                                    <option value="fr">🇫🇷 France</option>
+                                    <option value="jp">🇯🇵 Japan</option>
+                                    <option value="sg">🇸🇬 Singapore</option>
+                                    <option value="ae">🇦🇪 UAE</option>
+                                    <option value="other">🌍 Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Email Address *</label>
+                                <input type="email" id="regEmail" class="form-control" placeholder="your.email@company.com" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Password *</label>
+                                <input type="password" id="regPassword" class="form-control" placeholder="Minimum 6 characters" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Confirm Password *</label>
+                                <input type="password" id="regConfirmPassword" class="form-control" placeholder="Re-enter your password" required>
+                            </div>
+                            <button onclick="registerUser()" class="btn-success w-full">
+                                ✅ Create Account
+                            </button>
+                        </div>
+                        
+                        <div class="text-center mt-6">
+                            <p class="text-gray-600">Already have an account?</p>
+                            <button onclick="showLoginForm()" class="text-blue-600 hover:text-blue-800 font-medium">
+                                Login Here
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                
-                <!-- Navigation Buttons -->
-                <div class="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4 mt-4">
-                    <button onclick="showHome()" class="btn-primary">🏠 New Application</button>
-                    <button onclick="showTracker()" class="btn-secondary">📋 Track Application</button>
+
+                <div class="text-center mt-6 text-sm text-gray-500">
+                    <p>🔒 Your data is encrypted and secure</p>
+                    <p>By using Web Orion+, you agree to our Terms of Service</p>
                 </div>
             </div>
 
-            <!-- Main Container -->
-            <div class="card p-6 md:p-8">
+            <!-- Main Application (shown after authentication) -->
+            <div id="mainApp" class="hidden">
+                <!-- Header -->
+                <div class="text-center mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-600 rounded flex items-center justify-center mr-3">
+                                <svg class="w-6 h-6" fill="white" viewBox="0 0 24 24">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                                </svg>
+                            </div>
+                            <h1 class="text-3xl font-bold text-blue-600">Web Orion+</h1>
+                        </div>
+                        
+                        <!-- User Info & Logout -->
+                        <div class="flex items-center space-x-4">
+                            <div class="text-right text-sm">
+                                <p class="text-gray-600">Welcome back!</p>
+                                <p class="font-medium" id="userEmail">user@example.com</p>
+                                <p class="text-xs text-gray-500">
+                                    <span id="userCountry">Country</span> • Member since <span id="userSince">Date</span>
+                                </p>
+                            </div>
+                            <button onclick="logoutUser()" class="btn-secondary text-sm">
+                                🚪 Logout
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">Advanced Business Intelligence Platform</p>
+                    <div class="flex items-center justify-center mt-2">
+                        <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        <span class="text-green-600 text-sm">System Online • SSL Verified for ai.oriontec.xyz</span>
+                    </div>
+                    
+                    <!-- Navigation Buttons -->
+                    <div class="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4 mt-4">
+                        <button onclick="showHome()" class="btn-primary">🏠 New Application</button>
+                        <button onclick="showTracker()" class="btn-secondary">📋 Track Application</button>
+                    </div>
+                </div>
+
+                <!-- Main Container -->
+                <div class="card p-6 md:p-8">
                 <!-- Application Tracker Screen -->
                 <div id="trackerScreen" class="hidden">
                     <div class="text-center mb-6">
@@ -1589,23 +1707,39 @@
 
         // Navigation functions
         function showHome() {
+            if (!isAuthenticated) {
+                showAuthScreen();
+                return;
+            }
             hideAllScreens();
+            document.getElementById('mainApp').classList.remove('hidden');
             document.getElementById('cameraScreen').classList.remove('hidden');
             isInterviewMode = false;
         }
         
         function showTracker() {
+            if (!isAuthenticated) {
+                showAuthScreen();
+                return;
+            }
             hideAllScreens();
+            document.getElementById('mainApp').classList.remove('hidden');
             document.getElementById('trackerScreen').classList.remove('hidden');
             isInterviewMode = false;
         }
         
         function hideAllScreens() {
-            const screens = ['cameraScreen', 'welcomeScreen', 'assessmentScreen', 'detailsScreen', 'resultsScreen', 'trackerScreen', 'interviewScreen'];
+            const screens = ['authScreen', 'mainApp', 'cameraScreen', 'welcomeScreen', 'assessmentScreen', 'detailsScreen', 'resultsScreen', 'trackerScreen', 'interviewScreen'];
             screens.forEach(screen => {
-                document.getElementById(screen).classList.add('hidden');
+                const element = document.getElementById(screen);
+                if (element) {
+                    element.classList.add('hidden');
+                }
             });
-            document.getElementById('progressContainer').classList.add('hidden');
+            const progressContainer = document.getElementById('progressContainer');
+            if (progressContainer) {
+                progressContainer.classList.add('hidden');
+            }
         }
         
         // Application tracking functions
@@ -1988,10 +2122,204 @@
             }
         }
 
+        // Authentication System
+        let isAuthenticated = false;
+        let currentUser = null;
+
+        // User database (in real app, this would be server-side)
+        let userDatabase = JSON.parse(localStorage.getItem('webOrionUsers') || '[]');
+
+        function showAuthScreen() {
+            hideAllScreens();
+            document.getElementById('authScreen').classList.remove('hidden');
+        }
+
+        function showLoginForm() {
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('authTitle').textContent = 'Login to Web Orion+';
+            document.getElementById('authSubtitle').textContent = 'Enter your credentials to access the platform';
+        }
+
+        function showRegisterForm() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+            document.getElementById('authTitle').textContent = 'Create Web Orion+ Account';
+            document.getElementById('authSubtitle').textContent = 'Register to access our business intelligence platform';
+        }
+
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function validatePassword(password) {
+            return password.length >= 6;
+        }
+
+        function registerUser() {
+            const country = document.getElementById('regCountry').value;
+            const email = document.getElementById('regEmail').value.trim().toLowerCase();
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+            // Validation
+            if (!country) {
+                showAlert('❌ Please select your country', 'danger');
+                return;
+            }
+
+            if (!validateEmail(email)) {
+                showAlert('❌ Please enter a valid email address', 'danger');
+                return;
+            }
+
+            if (!validatePassword(password)) {
+                showAlert('❌ Password must be at least 6 characters long', 'danger');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showAlert('❌ Passwords do not match', 'danger');
+                return;
+            }
+
+            // Check if user already exists
+            const existingUser = userDatabase.find(user => user.email === email);
+            if (existingUser) {
+                showAlert('❌ Account with this email already exists. Please login instead.', 'danger');
+                return;
+            }
+
+            // Create new user
+            const newUser = {
+                id: 'USER-' + Date.now().toString(36).toUpperCase(),
+                email: email,
+                password: btoa(password), // Basic encoding (in real app, use proper hashing)
+                country: country,
+                registeredAt: new Date().toISOString(),
+                lastLogin: null,
+                isActive: true
+            };
+
+            userDatabase.push(newUser);
+            localStorage.setItem('webOrionUsers', JSON.stringify(userDatabase));
+
+            showAlert('✅ Account created successfully! Please login with your credentials.', 'success');
+            
+            // Clear form and switch to login
+            document.getElementById('registerForm').reset();
+            showLoginForm();
+        }
+
+        function loginUser() {
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!validateEmail(email)) {
+                showAlert('❌ Please enter a valid email address', 'danger');
+                return;
+            }
+
+            if (!password) {
+                showAlert('❌ Please enter your password', 'danger');
+                return;
+            }
+
+            // Find user in database
+            const user = userDatabase.find(user => 
+                user.email === email && 
+                user.password === btoa(password) && 
+                user.isActive
+            );
+
+            if (!user) {
+                showAlert('❌ Invalid email or password. Please check your credentials.', 'danger');
+                return;
+            }
+
+            // Update last login
+            user.lastLogin = new Date().toISOString();
+            localStorage.setItem('webOrionUsers', JSON.stringify(userDatabase));
+
+            // Set authentication
+            isAuthenticated = true;
+            currentUser = user;
+            localStorage.setItem('webOrionCurrentUser', JSON.stringify(user));
+
+            showAlert('✅ Login successful! Welcome to Web Orion+', 'success');
+            
+            // Clear form and show main app
+            document.getElementById('loginForm').reset();
+            setTimeout(() => {
+                showMainApp();
+            }, 1000);
+        }
+
+        function showMainApp() {
+            hideAllScreens();
+            document.getElementById('mainApp').classList.remove('hidden');
+            updateUserInfo();
+            showHome();
+        }
+
+        function updateUserInfo() {
+            if (currentUser) {
+                document.getElementById('userEmail').textContent = currentUser.email;
+                document.getElementById('userCountry').textContent = getCountryName(currentUser.country);
+                document.getElementById('userSince').textContent = new Date(currentUser.registeredAt).toLocaleDateString();
+            }
+        }
+
+        function getCountryName(code) {
+            const countries = {
+                'us': 'United States',
+                'uk': 'United Kingdom',
+                'ca': 'Canada',
+                'au': 'Australia',
+                'in': 'India',
+                'de': 'Germany',
+                'fr': 'France',
+                'jp': 'Japan',
+                'sg': 'Singapore',
+                'ae': 'UAE',
+                'other': 'Other'
+            };
+            return countries[code] || code;
+        }
+
+        function logoutUser() {
+            isAuthenticated = false;
+            currentUser = null;
+            localStorage.removeItem('webOrionCurrentUser');
+            
+            showAlert('👋 Logged out successfully!', 'info');
+            showAuthScreen();
+        }
+
+        function checkAuthStatus() {
+            const savedUser = localStorage.getItem('webOrionCurrentUser');
+            if (savedUser) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                    isAuthenticated = true;
+                    showMainApp();
+                    return true;
+                } catch (error) {
+                    localStorage.removeItem('webOrionCurrentUser');
+                }
+            }
+            return false;
+        }
+
         // Initialize
         window.onload = function() {
+            // Check if user is already logged in
+            if (!checkAuthStatus()) {
+                showAuthScreen();
+            }
+            
             updateAccessStatus();
-            showHome();
             
             // SSL connection is secure for ai.oriontec.xyz
             if (location.hostname === 'ai.oriontec.xyz') {
@@ -2011,5 +2339,5 @@
             }, 1000);
         };
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967e65ba33eb91c4',t:'MTc1Mzk3ODU1Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967e6fe817195528',t:'MTc1Mzk3ODk3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
